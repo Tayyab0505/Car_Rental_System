@@ -12,7 +12,7 @@ const register = async (req, res) => {
 const login = async (req, res) => {
     try {
         const token = await userService.login(req.body);
-        return res.status(200).json({ message: "Login successful", token });
+        return res.status(200).json({ message: "Login Successfull", token });
     } catch (error) {
         return res.status(400).json({ message: error.message });
     };
