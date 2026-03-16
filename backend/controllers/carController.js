@@ -3,7 +3,7 @@ const carService = require('../services/carService');
 const addCar = async (req, res) => {
     try {
         const car = await carService.addCar(req.body);
-        res.status(201).json({ message: "Car added successfully", car });
+        res.status(200).json({ message: "Car added successfully", car });
     } catch (error) {
         res.status(400).json({ error: error.message });
     };
@@ -40,6 +40,7 @@ const deleteCar = async (req, res) => {
     try {
         await carService.deleteCar(req.params.id);
         res.status(200).json({ message: "Car deleted successfully" });
+
     } catch (error) {
         res.status(500).json({ status: 500, error: error.message });
     };
