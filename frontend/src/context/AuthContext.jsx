@@ -7,7 +7,7 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(() => {
         try {
             const stored = localStorage.getItem('user')
-            return stored ? JSON.parse(stored) : null
+            return stored && stored !== 'undefined' ? JSON.parse(stored) : null
         } catch {
             return null
         }

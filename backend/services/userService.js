@@ -37,7 +37,6 @@ const login = async (data) => {
     };
 
     const user = await User.findOne({ where: { email } });
-
     if (!user) {
         throw new Error("User not found");
     };
@@ -53,7 +52,15 @@ const login = async (data) => {
         { expiresIn: "100d" }
     );
 
-    return token;
+    return {
+        token,
+        user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role
+        }
+    };
 };
 
 module.exports = {
