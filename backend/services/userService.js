@@ -8,7 +8,7 @@ const User = models.user;
 const register = async (data) => {
     const { name, email, password, role } = data;
 
-    if (!name || !email || !password || !role) {
+    if (!name || !email || !password) {
         throw new Error("Please fill all the fields");
     };
 
