@@ -23,7 +23,11 @@ export default function Cars() {
             .finally(() => setLoading(false))
     }
 
-    useEffect(() => { fetchCars() }, [])
+    useEffect(() => {
+        API.get('/findAllCar')
+            .then(r => setCars(r.data))
+            .finally(() => setLoading(false))
+    }, [])
 
     const openAdd = () => { setForm(emptyForm); setEditId(null); setShowModal(true) }
     const openEdit = (car) => { setForm({ brand: car.brand, model: car.model, pricePerDay: car.pricePerDay, availability: car.availability }); setEditId(car.id); setShowModal(true) }
@@ -118,7 +122,7 @@ export default function Cars() {
                 <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
                         <h3 className="text-lg font-semibold text-slate-800 mb-5" style={{ fontFamily: 'Outfit,sans-serif' }}>{editId ? 'Edit car' : 'Add new car'}</h3>
-                        {[['Brand', 'brand', 'text', 'e.g. Toyota'], ['Model', 'model', 'text', 'e.g. Corolla'], ['Price per day', 'pricePerDay', 'number', 'e.g. 50']].map(([label, key, type, ph]) => (
+                        {[['Brand', 'brand', 'text', 'e.g. Toyota'], ['Model', 'model', 'text', 'e.g. Corolla'], ['Price per day', 'pricePerDay', 'number', 'e.g. 5000']].map(([label, key, type, ph]) => (
                             <div key={key} className="mb-4">
                                 <label className="block text-xs font-medium text-slate-500 mb-1.5">{label}</label>
                                 <input type={type} placeholder={ph} value={form[key]}
