@@ -1,0 +1,166 @@
+import { useEffect, useState } from 'react'
+import API from '../../api/axios'
+import { useAuth } from '../../context/AuthContext'
+
+const emptyForm = { brand: '', model: '', pricePerDay: '', availability: true }
+
+export default function Cars() {
+    const { user } = useAuth()
+    const isAdmin = user?.role === 'admin'
+    const [cars, setCars] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [showModal, setShowModal] = useState(false)
+    const [form, setForm] = useState(emptyForm)
+    const [editId, setEditId] = useState(null)
+    const [bookingModal, setBookingModal] = useState(null)
+    const [bookingForm, setBookingForm] = useState({ startDate: '', endDate: '' })
+    const [msg, setMsg] = useState('')
+
+    const fetchCars = () => {
+        setLoading(true)
+        API.get('/findAllCar')
+            .then(r => setCars(r.data))
+            .finally(() => setLoading(false))
+    }
+
+    useEffect(() => { fetchCars() }, [])
+
+    const openAdd = () => { setForm(emptyForm); setEditId(null); setShowModal(true) }
+    const openEdit = (car) => { setForm({ brand: car.brand, model: car.model, pricePerDay: car.pricePerDay, availability: car.availability }); setEditId(car.id); setShowModal(true) }
+
+    const handleSave = async () => {
+        try {
+            if (editId) await API.put(`/updateCar/${editId}`, form)
+            else await API.post('/addCar', form)
+            setShowModal(false); fetchCars()
+        } catch { setMsg('Failed to save car') }
+    }
+
+    const handleDelete = async (id) => {
+        if (!window.confirm('Delete this car?')) return
+        try { await API.delete(`/deleteCar/${id}`); fetchCars() }
+        catch { setMsg('Failed to delete') }
+    }
+
+    const handleBook = async () => {
+        try {
+            await API.post('/booking', { carId: bookingModal.id, ...bookingForm })
+            setBookingModal(null); setMsg('Booking created!')
+        } catch { setMsg('Booking failed') }
+    }
+
+    return (
+        <div className="p-8">
+            <div className="flex items-center justify-between mb-8">
+                <div>
+                    <h1 className="text-2xl font-semibold text-slate-800" style={{ fontFamily: 'Outfit,sans-serif' }}>
+                        {isAdmin ? 'Cars management' : 'Browse cars'}
+                    </h1>
+                    <p className="text-slate-500 text-sm mt-1">{isAdmin ? 'Add, edit or remove cars from the fleet' : 'Pick a car and make a booking'}</p>
+                </div>
+                {isAdmin && (
+                    <button onClick={openAdd} className="flex items-center gap-2 px-4 py-2.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-sm font-medium transition-colors">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                        Add car
+                    </button>
+                )}
+            </div>
+
+            {msg && <div className="mb-4 p-3 bg-blue-50 border border-blue-200 text-blue-700 rounded-xl text-sm">{msg}</div>}
+
+            {loading ? (
+                <div className="text-center py-20 text-slate-400">Loading cars...</div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                    {cars.map(car => (
+                        <div key={car.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                            <div className="h-36 bg-gradient-to-br from-blue-50 to-slate-100 flex items-center justify-center">
+                                <svg className="w-20 h-20 text-blue-200" fill="none" stroke="currentColor" strokeWidth={1} viewBox="0 0 24 24">
+                                    <path d="M5 17H3a2 2 0 01-2-2V9a2 2 0 012-2h1l2-3h10l2 3h1a2 2 0 012 2v6a2 2 0 01-2 2h-2" />
+                                    <circle cx="7" cy="17" r="2" /><circle cx="17" cy="17" r="2" />
+                                    <path d="M5 9h14" />
+                                </svg>
+                            </div>
+                            <div className="p-5">
+                                <div className="flex items-start justify-between mb-2">
+                                    <div>
+                                        <h3 className="font-semibold text-slate-800" style={{ fontFamily: 'Outfit,sans-serif' }}>{car.brand} {car.model}</h3>
+                                        <p className="text-blue-700 font-semibold text-lg mt-0.5" style={{ fontFamily: 'Outfit,sans-serif' }}>${car.pricePerDay}<span className="text-slate-400 text-xs font-normal">/day</span></p>
+                                    </div>
+                                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${car.availability ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>
+                                        {car.availability ? 'Available' : 'Unavailable'}
+                                    </span>
+                                </div>
+                                <div className="flex gap-2 mt-4">
+                                    {isAdmin ? (
+                                        <>
+                                            <button onClick={() => openEdit(car)} className="flex-1 py-2 rounded-lg border border-slate-200 text-slate-600 text-sm hover:bg-slate-50 transition-colors">Edit</button>
+                                            <button onClick={() => handleDelete(car.id)} className="flex-1 py-2 rounded-lg border border-red-100 text-red-500 text-sm hover:bg-red-50 transition-colors">Delete</button>
+                                        </>
+                                    ) : (
+                                        <button
+                                            disabled={!car.availability}
+                                            onClick={() => { setBookingModal(car); setBookingForm({ startDate: '', endDate: '' }) }}
+                                            className="flex-1 py-2 rounded-lg bg-blue-700 text-white text-sm font-medium hover:bg-blue-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                        >
+                                            Book now
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Admin car modal */}
+            {showModal && (
+                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
+                        <h3 className="text-lg font-semibold text-slate-800 mb-5" style={{ fontFamily: 'Outfit,sans-serif' }}>{editId ? 'Edit car' : 'Add new car'}</h3>
+                        {[['Brand', 'brand', 'text', 'e.g. Toyota'], ['Model', 'model', 'text', 'e.g. Corolla'], ['Price per day', 'pricePerDay', 'number', 'e.g. 50']].map(([label, key, type, ph]) => (
+                            <div key={key} className="mb-4">
+                                <label className="block text-xs font-medium text-slate-500 mb-1.5">{label}</label>
+                                <input type={type} placeholder={ph} value={form[key]}
+                                    onChange={e => setForm({ ...form, [key]: e.target.value })}
+                                    className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 text-sm text-slate-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10"
+                                />
+                            </div>
+                        ))}
+                        <div className="mb-6 flex items-center gap-3">
+                            <input type="checkbox" id="avail" checked={form.availability} onChange={e => setForm({ ...form, availability: e.target.checked })} className="w-4 h-4 accent-blue-600" />
+                            <label htmlFor="avail" className="text-sm text-slate-600">Available for booking</label>
+                        </div>
+                        <div className="flex gap-3">
+                            <button onClick={() => setShowModal(false)} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm hover:bg-slate-50">Cancel</button>
+                            <button onClick={handleSave} className="flex-1 py-2.5 rounded-xl bg-blue-700 text-white text-sm font-medium hover:bg-blue-800">Save</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* User booking modal */}
+            {bookingModal && (
+                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
+                        <h3 className="text-lg font-semibold text-slate-800 mb-1" style={{ fontFamily: 'Outfit,sans-serif' }}>Book {bookingModal.brand} {bookingModal.model}</h3>
+                        <p className="text-slate-400 text-sm mb-5">${bookingModal.pricePerDay}/day</p>
+                        {[['Start date', 'startDate'], ['End date', 'endDate']].map(([label, key]) => (
+                            <div key={key} className="mb-4">
+                                <label className="block text-xs font-medium text-slate-500 mb-1.5">{label}</label>
+                                <input type="date" value={bookingForm[key]}
+                                    onChange={e => setBookingForm({ ...bookingForm, [key]: e.target.value })}
+                                    className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 text-sm text-slate-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10"
+                                />
+                            </div>
+                        ))}
+                        <div className="flex gap-3 mt-2">
+                            <button onClick={() => setBookingModal(null)} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm hover:bg-slate-50">Cancel</button>
+                            <button onClick={handleBook} className="flex-1 py-2.5 rounded-xl bg-blue-700 text-white text-sm font-medium hover:bg-blue-800">Confirm booking</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    )
+}

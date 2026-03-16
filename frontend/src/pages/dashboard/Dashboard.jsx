@@ -1,14 +1,17 @@
-import { Navigate, Route, Routes } from "react-router-dom";
-import SideBar from "../../components/Sidebar";
-import { useAuth } from "../../context/AuthContext";
+import { Routes, Route, Navigate } from 'react-router-dom'
+import Sidebar from '../../components/Sidebar'
+import Overview from './Overview'
+import Cars from './Cars'
+import Bookings from './Bookings'
+import { useAuth } from '../../context/AuthContext'
 
 export default function Dashboard() {
-    const { user } = useAuth();
+    const { user } = useAuth()
     const isAdmin = user?.role === 'admin'
 
     return (
         <div className="flex min-h-screen bg-slate-50">
-            <SideBar />
+            <Sidebar />
             <main className="flex-1 overflow-auto">
                 <Routes>
                     <Route path="/" element={<Navigate to={isAdmin ? 'overview' : 'cars'} />} />
