@@ -69,7 +69,7 @@ export default function Bookings() {
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="border-b border-slate-100 bg-slate-50">
-                                {['Booking ID', 'Car ID', 'Start date', 'End date', 'Total', 'Status', 'Actions'].map(h => (
+                                {['Booking ID', 'User ID', 'Car ID', 'Start date', 'End date', 'Total', 'Status', 'Actions'].map(h => (
                                     <th key={h} className="text-left px-6 py-3.5 text-xs font-medium text-slate-400 uppercase tracking-wide whitespace-nowrap">{h}</th>
                                 ))}
                             </tr>
@@ -82,6 +82,7 @@ export default function Bookings() {
                             ) : bookings.map(b => (
                                 <tr key={b.id} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
                                     <td className="px-6 py-4 font-mono text-xs text-slate-500">#{b.id}</td>
+                                    <td className="px-6 py-4 text-slate-600">{b.userId}</td>
                                     <td className="px-6 py-4 text-slate-600">{b.carId}</td>
                                     <td className="px-6 py-4 text-slate-600">{b.startDate?.slice(0, 10)}</td>
                                     <td className="px-6 py-4 text-slate-600">{b.endDate?.slice(0, 10)}</td>
