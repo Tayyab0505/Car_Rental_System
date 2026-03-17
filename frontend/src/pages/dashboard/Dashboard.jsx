@@ -10,9 +10,9 @@ export default function Dashboard() {
     const isAdmin = user?.role === 'admin'
 
     return (
-        <div className="flex min-h-screen bg-slate-50">
+        <div className="flex min-h-screen bg-slate-50 dark:bg-slate-900">
             <Sidebar />
-            <main className="flex-1 overflow-auto">
+            <main className="flex-1 overflow-auto dark:bg-slate-900">
                 <Routes>
                     <Route path="/" element={<Navigate to={isAdmin ? 'overview' : 'cars'} />} />
                     {isAdmin && <Route path="overview" element={<Overview />} />}
