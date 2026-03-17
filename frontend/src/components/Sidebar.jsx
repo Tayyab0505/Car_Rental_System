@@ -108,7 +108,7 @@ export default function SideBar() {
             <div className="px-3 pb-5">
                 <button
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-blue-300 hover:bg-red-500/20 hover:text-red-300 transition-all"
+                    className="w-full cursor-pointer flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-blue-300 hover:bg-red-500/20 hover:text-red-300 transition-all"
                 >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                         <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" />

@@ -112,7 +112,7 @@ export default function Login() {
                         </div>
                         <button
                             type="submit" disabled={loading}
-                            className="w-full py-2.5 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-60 mt-2"
+                            className="w-full cursor-pointer py-2.5 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-60 mt-2"
                             style={{ fontFamily: 'Outfit,sans-serif' }}
                         >
                             {loading ? 'Signing in...' : 'Sign in to DriveEase'}
