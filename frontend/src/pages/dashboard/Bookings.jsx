@@ -37,7 +37,8 @@ export default function Bookings() {
     const handleCancel = async () => {
         try {
             await API.delete(`/cancelBooking/${cancelModel}`);
-            fetchBookings();
+            setCancelModel(null)
+            fetchBookings()
             setMsg('Booking cancelled')
         }
         catch { setMsg('Failed to cancel') }
