@@ -101,10 +101,13 @@ export default function Bookings() {
                                                 </button>
                                             )}
                                             {b.status !== 'cancelled' && (
-                                                <button onClick={() => handleCancel(b.id)} className="px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-medium hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors cursor-pointer whitespace-nowrap border border-red-100 dark:border-red-800">
+                                                <button
+                                                    onClick={() => setCancelModel(b.id)} className="px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-medium hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors cursor-pointer whitespace-nowrap border border-red-100 dark:border-red-800">
                                                     Cancel
                                                 </button>
                                             )}
+
+                                            
                                         </div>
                                     </td>
                                 </tr>
