@@ -119,11 +119,17 @@ const getBookingById = async (id) => {
     return booking;
 };
 
+const getByUserId = async (userId) => {
+    const bookings = await Booking.findAll({ where: { userId } });
+    return bookings;
+}
+
 module.exports = {
     createBooking,
     updateBooking,
     confirmBooking,
     cancelBooking,
     getAllBookings,
-    getBookingById
+    getBookingById,
+    getByUserId
 };
