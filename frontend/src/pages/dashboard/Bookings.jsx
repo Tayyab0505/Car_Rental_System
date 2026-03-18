@@ -10,9 +10,9 @@ export default function Bookings() {
     const [msg, setMsg] = useState('')
 
     useEffect(() => {
-        const endpoint = isAdmin ? '/getAllBooking' : `/getByID/${user?.id}`
+        const endpoint = isAdmin ? '/getAllBooking' : `/getBookingsByUser/${user?.id}`
         API.get(endpoint)
-            .then(r => setBookings(Array.isArray(r.data) ? r.data : [r.data]))
+            .then(r => setBookings(Array.isArray(r.data) ? r.data : []))
             .finally(() => setLoading(false))
     }, [])
 
