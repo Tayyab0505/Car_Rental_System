@@ -26,6 +26,7 @@ router.put("/bookings/:id/confirm", verifyAdmin, bookingController.confirmBookin
 router.delete('/cancelBooking/:id', verifyToken, bookingController.cancelBooking);
 router.get('/getAllBooking', verifyToken, verifyAdmin, bookingController.getAll);
 router.get('/getByID/:id', verifyToken, bookingController.getById);
+router.get('/getBookingsByUser/:id', verifyToken, bookingController.getByUserId);
 
 
 module.exports = router;
