@@ -8,6 +8,7 @@ export default function Bookings() {
     const [bookings, setBookings] = useState([])
     const [loading, setLoading] = useState(true)
     const [msg, setMsg] = useState('')
+    const [cancelModel, setCancelModel] = useState(null)
 
     useEffect(() => {
         const endpoint = isAdmin ? '/getAllBooking' : `/getBookingsByUser/${user?.id}`
@@ -25,13 +26,20 @@ export default function Bookings() {
     }
 
     const handleConfirm = async (id) => {
-        try { await API.put(`/bookings/${id}/confirm`); fetchBookings(); setMsg('Booking confirmed!') }
+        try {
+            await API.put(`/bookings/${id}/confirm`);
+            fetchBookings();
+            setMsg('Booking confirmed!')
+        }
         catch { setMsg('Failed to confirm') }
     }
 
-    const handleCancel = async (id) => {
-        if (!window.confirm('Cancel this booking?')) return
-        try { await API.delete(`/cancelBooking/${id}`); fetchBookings(); setMsg('Booking cancelled') }
+    const handleCancel = async () => {
+        try {
+            await API.delete(`/cancelBooking/${cancelModel}`);
+            fetchBookings();
+            setMsg('Booking cancelled')
+        }
         catch { setMsg('Failed to cancel') }
     }
 
