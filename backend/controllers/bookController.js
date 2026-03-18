@@ -105,5 +105,6 @@ module.exports = {
     confirmBooking,
     cancelBooking,
     getAll,
-    getById
+    getById,
+    getByUserId
 };
