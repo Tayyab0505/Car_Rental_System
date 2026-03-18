@@ -8,7 +8,7 @@ const createBooking = async (req, res) => {
             });
         }
 
-        const userId = req.user.id; 
+        const userId = req.user.id;
 
         const result = await bookingService.createBooking({
             userId,
@@ -89,6 +89,15 @@ const getById = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
+const getByUserId = async (req, res) => {
+    try {
+        const bookings = await bookingService.getByUserId(req.params.id)
+        return res.status(200).json(bookings)
+    } catch (error) {
+        return res.status(400).json({ message: error.message })
+    }
+}
 
 module.exports = {
     createBooking,
