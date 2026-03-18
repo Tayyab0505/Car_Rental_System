@@ -107,7 +107,7 @@ export default function Bookings() {
                                                 </button>
                                             )}
 
-                                            {cancelModal && (
+                                            {cancelModel && (
                                                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                                                     <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl border border-slate-100 dark:border-slate-700">
 
@@ -123,13 +123,13 @@ export default function Bookings() {
                                                             Cancel booking?
                                                         </h3>
                                                         <p className="text-sm text-slate-500 dark:text-slate-400 text-center mb-6">
-                                                            This action cannot be undone. Your booking #{cancelModal} will be permanently cancelled.
+                                                            This action cannot be undone. Your booking #{cancelModel} will be permanently cancelled.
                                                         </p>
 
                                                         {/* Buttons */}
                                                         <div className="flex gap-3">
                                                             <button
-                                                                onClick={() => setCancelModal(null)}
+                                                                onClick={() => setCancelModel(null)}
                                                                 className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                                                             >
                                                                 Keep booking
