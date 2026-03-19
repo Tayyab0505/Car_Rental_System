@@ -1,16 +1,9 @@
 import { useEffect, useState } from 'react'
 import API from '../../api/axios'
 
-const emptyForm = { brand: '', model: '', pricePerDay: '', availability: true }
-
 export default function Cars() {
-    const { user } = useAuth()
-    const isAdmin = user?.role === 'admin'
     const [cars, setCars] = useState([])
     const [loading, setLoading] = useState(true)
-    const [showModal, setShowModal] = useState(false)
-    const [form, setForm] = useState(emptyForm)
-    const [editId, setEditId] = useState(null)
     const [bookingModal, setBookingModal] = useState(null)
     const [bookingForm, setBookingForm] = useState({ startDate: '', endDate: '' })
     const [msg, setMsg] = useState('')
