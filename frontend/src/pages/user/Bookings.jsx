@@ -132,9 +132,6 @@ export default function UserBookings() {
                     </div>
                 </div>
             )}
-
-
-
         </div>
     )
 }
