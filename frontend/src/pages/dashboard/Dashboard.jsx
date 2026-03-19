@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Sidebar from '../../components/Sidebar'
-import Overview from './Overview'
+import Overview from '../admin/Overview'
 import Cars from './Cars'
 import Bookings from './Bookings'
 import { useAuth } from '../../context/AuthContext'
