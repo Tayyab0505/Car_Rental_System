@@ -7,20 +7,16 @@ export default function AdminBookings() {
     const [msg, setMsg] = useState('')
     const [cancelModel, setCancelModel] = useState(null)
 
-    useEffect(() => {
-        const endpoint = isAdmin ? '/getAllBooking' : `/getBookingsByUser/${user?.id}`
-        API.get(endpoint)
-            .then(r => setBookings(Array.isArray(r.data) ? r.data : []))
-            .finally(() => setLoading(false))
-    }, [])
-
     const fetchBookings = () => {
         setLoading(true)
-        const endpoint = isAdmin ? '/getAllBooking' : `/getByID/${user?.id}`
-        API.get(endpoint)
+        API.get('/getAllBooking')
             .then(r => setBookings(Array.isArray(r.data) ? r.data : [r.data]))
             .finally(() => setLoading(false))
     }
+
+    useEffect(() => {
+        fetchBookings()
+    }, [])
 
     const handleConfirm = async (id) => {
         try {
