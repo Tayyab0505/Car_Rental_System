@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import API from '../../api/axios'
 
-export default function Cars() {
+export default function UserCars() {
     const [cars, setCars] = useState([])
     const [loading, setLoading] = useState(true)
     const [bookingModal, setBookingModal] = useState(null)
@@ -77,8 +77,6 @@ export default function Cars() {
                 </div>
             )}
 
-
-            {/* User booking modal */}
             {bookingModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl border border-slate-100 dark:border-slate-700">
