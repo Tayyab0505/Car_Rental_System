@@ -24,24 +24,6 @@ export default function Cars() {
 
     return (
         <div className="p-8">
-            <div className="flex items-center justify-between mb-8">
-                <div>
-                    <h1 className="text-2xl font-semibold text-slate-800 dark:text-slate-100" style={{ fontFamily: 'Outfit,sans-serif' }}>
-                        {isAdmin ? 'Cars management' : 'Browse cars'}
-                    </h1>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-                        {isAdmin ? 'Add, edit or remove cars from the fleet' : 'Pick a car and make a booking'}
-                    </p>
-                </div>
-                {isAdmin && (
-                    <button onClick={openAdd} className="flex items-center gap-2 px-4 py-2.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-sm font-medium transition-colors cursor-pointer">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                            <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-                        </svg>
-                        Add car
-                    </button>
-                )}
-            </div>
 
             {msg && (
                 <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 rounded-xl text-sm">
