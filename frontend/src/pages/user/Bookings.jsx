@@ -19,6 +19,11 @@ export default function UserBookings() {
             .finally(() => setLoading(false))
     }
 
+    useEffect(() => {
+        fetchBookings()
+    }, [])
+
+
     const handleConfirm = async (id) => {
         try {
             await API.put(`/bookings/${id}/confirm`);
