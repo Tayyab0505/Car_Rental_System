@@ -49,11 +49,7 @@ export default function AdminBookings() {
                 <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Manage and confirm customer bookings</p>
             </div>
 
-            {msg && (
-                <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 rounded-xl text-sm">
-                    {msg}
-                </div>
-            )}
+            {msg && <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 rounded-xl text-sm">{msg}</div>}
 
             <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
@@ -83,56 +79,16 @@ export default function AdminBookings() {
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-2">
-                                            {isAdmin && b.status === 'pending' && (
+                                            {b.status === 'pending' && (
                                                 <button onClick={() => handleConfirm(b.id)} className="px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-medium hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors cursor-pointer whitespace-nowrap border border-emerald-100 dark:border-emerald-800">
                                                     Confirm
                                                 </button>
                                             )}
                                             {b.status !== 'cancelled' && (
-                                                <button
-                                                    onClick={() => setCancelModel(b.id)} className="px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-medium hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors cursor-pointer whitespace-nowrap border border-red-100 dark:border-red-800">
+                                                <button onClick={() => setCancelModel(b.id)} className="px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-medium hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors cursor-pointer whitespace-nowrap border border-red-100 dark:border-red-800">
                                                     Cancel
                                                 </button>
                                             )}
-
-                                            {cancelModel && (
-                                                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                                                    <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl border border-slate-100 dark:border-slate-700">
-
-                                                        {/* Icon */}
-                                                        <div className="w-12 h-12 bg-red-50 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                                                            <svg className="w-6 h-6 text-red-500 dark:text-red-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-                                                            </svg>
-                                                        </div>
-
-                                                        {/* Text */}
-                                                        <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 text-center mb-1" style={{ fontFamily: 'Outfit,sans-serif' }}>
-                                                            Cancel booking?
-                                                        </h3>
-                                                        <p className="text-sm text-slate-500 dark:text-slate-400 text-center mb-6">
-                                                            This action cannot be undone. Your booking #{cancelModel} will be permanently cancelled.
-                                                        </p>
-
-                                                        {/* Buttons */}
-                                                        <div className="flex gap-3">
-                                                            <button
-                                                                onClick={() => setCancelModel(null)}
-                                                                className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
-                                                            >
-                                                                Keep booking
-                                                            </button>
-                                                            <button
-                                                                onClick={handleCancel}
-                                                                className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition-colors cursor-pointer"
-                                                            >
-                                                                Yes, cancel it
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-
                                         </div>
                                     </td>
                                 </tr>
@@ -141,6 +97,24 @@ export default function AdminBookings() {
                     </table>
                 </div>
             </div>
+
+            {cancelModel && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl border border-slate-100 dark:border-slate-700">
+                        <div className="w-12 h-12 bg-red-50 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-6 h-6 text-red-500 dark:text-red-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                            </svg>
+                        </div>
+                        <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 text-center mb-1" style={{ fontFamily: 'Outfit,sans-serif' }}>Cancel booking?</h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 text-center mb-6">Booking #{cancelModel} will be permanently cancelled.</p>
+                        <div className="flex gap-3">
+                            <button onClick={() => setCancelModel(null)} className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer">Keep booking</button>
+                            <button onClick={handleCancel} className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition-colors cursor-pointer">Yes, cancel it</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
