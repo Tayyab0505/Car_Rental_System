@@ -11,9 +11,11 @@ export default function UserBookings() {
 
     const fetchBookings = () => {
         setLoading(true)
-        const endpoint = isAdmin ? '/getAllBooking' : `/getByID/${user?.id}`
-        API.get(endpoint)
-            .then(r => setBookings(Array.isArray(r.data) ? r.data : [r.data]))
+        API.get('/getAllBooking')
+            .then(r => {
+                const all = Array.isArray(r.data) ? r.data : []
+                setBookings(all.filter(b => b.userId === user?.id))
+            })
             .finally(() => setLoading(false))
     }
 
