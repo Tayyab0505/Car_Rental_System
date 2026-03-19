@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import API from '../../api/axios'
-import { useAuth } from '../../context/AuthContext'
 
 const emptyForm = { brand: '', model: '', pricePerDay: '', availability: true }
 
@@ -22,28 +21,6 @@ export default function Cars() {
             .finally(() => setLoading(false))
     }, [])
 
-    const fetchCars = () => {
-        setLoading(true)
-        API.get('/findAllCar')
-            .then(r => setCars(r.data))
-            .finally(() => setLoading(false))
-    }
-
-    const openAdd = () => { setForm(emptyForm); setEditId(null); setShowModal(true) }
-    const openEdit = (car) => {
-        setForm({ brand: car.brand, model: car.model, pricePerDay: car.pricePerDay, availability: car.availability })
-        setEditId(car.id)
-        setShowModal(true)
-    }
-
-    const handleSave = async () => {
-        try {
-            if (editId) await API.put(`/updateCar/${editId}`, form)
-            else await API.post('/addCar', form)
-            setShowModal(false)
-            fetchCars()
-        } catch { setMsg('Failed to save car') }
-    }
 
     const handleDelete = async (id) => {
         if (!window.confirm('Delete this car?')) return
@@ -140,42 +117,6 @@ export default function Cars() {
                 </div>
             )}
 
-            {/* Admin car modal */}
-            {showModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl border border-slate-100 dark:border-slate-700">
-                        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-5" style={{ fontFamily: 'Outfit,sans-serif' }}>
-                            {editId ? 'Edit car' : 'Add new car'}
-                        </h3>
-                        {[['Brand', 'brand', 'text', 'e.g. Toyota'], ['Model', 'model', 'text', 'e.g. Corolla'], ['Price per day', 'pricePerDay', 'number', 'e.g. 50']].map(([label, key, type, ph]) => (
-                            <div key={key} className="mb-4">
-                                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{label}</label>
-                                <input
-                                    type={type} placeholder={ph} value={form[key]}
-                                    onChange={e => setForm({ ...form, [key]: e.target.value })}
-                                    className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
-                                />
-                            </div>
-                        ))}
-                        <div className="mb-6 flex items-center gap-3">
-                            <input
-                                type="checkbox" id="avail" checked={form.availability}
-                                onChange={e => setForm({ ...form, availability: e.target.checked })}
-                                className="w-4 h-4 accent-blue-600"
-                            />
-                            <label htmlFor="avail" className="text-sm text-slate-600 dark:text-slate-300 cursor-pointer">Available for booking</label>
-                        </div>
-                        <div className="flex gap-3">
-                            <button onClick={() => setShowModal(false)} className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer transition-colors">
-                                Cancel
-                            </button>
-                            <button onClick={handleSave} className="flex-1 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium cursor-pointer transition-colors">
-                                Save
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {/* User booking modal */}
             {bookingModal && (
