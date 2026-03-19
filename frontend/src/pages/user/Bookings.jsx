@@ -43,10 +43,10 @@ export default function UserBookings() {
         <div className="p-8">
             <div className="mb-8">
                 <h1 className="text-2xl font-semibold text-slate-800 dark:text-slate-100" style={{ fontFamily: 'Outfit,sans-serif' }}>
-                    {isAdmin ? 'All bookings' : 'My bookings'}
+                    My bookings
                 </h1>
                 <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-                    {isAdmin ? 'Manage and confirm customer bookings' : 'Track your rental history'}
+                    Track your rental history
                 </p>
             </div>
 
