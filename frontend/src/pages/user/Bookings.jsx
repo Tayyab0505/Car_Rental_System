@@ -4,18 +4,10 @@ import { useAuth } from '../../context/AuthContext'
 
 export default function UserBookings() {
     const { user } = useAuth()
-    const isAdmin = user?.role === 'admin'
     const [bookings, setBookings] = useState([])
     const [loading, setLoading] = useState(true)
     const [msg, setMsg] = useState('')
     const [cancelModel, setCancelModel] = useState(null)
-
-    useEffect(() => {
-        const endpoint = isAdmin ? '/getAllBooking' : `/getBookingsByUser/${user?.id}`
-        API.get(endpoint)
-            .then(r => setBookings(Array.isArray(r.data) ? r.data : []))
-            .finally(() => setLoading(false))
-    }, [])
 
     const fetchBookings = () => {
         setLoading(true)
