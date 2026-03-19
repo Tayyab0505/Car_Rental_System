@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import API from '../api/axios'
+import API from '../../api/axios'
 
 export default function Register() {
     const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' })
