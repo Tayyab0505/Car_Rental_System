@@ -23,16 +23,6 @@ export default function UserBookings() {
         fetchBookings()
     }, [])
 
-
-    const handleConfirm = async (id) => {
-        try {
-            await API.put(`/bookings/${id}/confirm`);
-            fetchBookings();
-            setMsg('Booking confirmed!')
-        }
-        catch { setMsg('Failed to confirm') }
-    }
-
     const handleCancel = async () => {
         try {
             await API.delete(`/cancelBooking/${cancelModel}`);
