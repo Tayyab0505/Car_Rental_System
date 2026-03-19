@@ -25,6 +25,11 @@ export default function Cars() {
     return (
         <div className="p-8">
 
+            <div className="mb-8">
+                <h1 className="text-2xl font-semibold text-slate-800 dark:text-slate-100" style={{ fontFamily: 'Outfit,sans-serif' }}>Browse cars</h1>
+                <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Pick a car and make a booking</p>
+            </div>
+
             {msg && (
                 <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 rounded-xl text-sm">
                     {msg}
@@ -53,8 +58,8 @@ export default function Cars() {
                                         </p>
                                     </div>
                                     <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${car.availability
-                                            ? 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400'
-                                            : 'bg-red-50 dark:bg-red-900/40 text-red-600 dark:text-red-400'
+                                        ? 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400'
+                                        : 'bg-red-50 dark:bg-red-900/40 text-red-600 dark:text-red-400'
                                         }`}>
                                         {car.availability ? 'Available' : 'Unavailable'}
                                     </span>
