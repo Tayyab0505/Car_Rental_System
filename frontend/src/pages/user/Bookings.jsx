@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import API from '../../api/axios'
 import { useAuth } from '../../context/AuthContext'
 
-export default function Bookings() {
+export default function UserBookings() {
     const { user } = useAuth()
     const isAdmin = user?.role === 'admin'
     const [bookings, setBookings] = useState([])
