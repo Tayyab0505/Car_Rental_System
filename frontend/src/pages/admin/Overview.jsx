@@ -36,7 +36,7 @@ export default function Overview() {
     const availableCars = cars.filter(c => c.availability).length
 
     const stats = [
-        {
+        {   
             label: 'Total cars', value: loading ? '...' : cars.length,
             sub: `${availableCars} available`,
             color: 'bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400',
