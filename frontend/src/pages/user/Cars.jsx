@@ -64,26 +64,13 @@ export default function Cars() {
                                         {car.availability ? 'Available' : 'Unavailable'}
                                     </span>
                                 </div>
-                                <div className="flex gap-2 mt-4">
-                                    {isAdmin ? (
-                                        <>
-                                            <button onClick={() => openEdit(car)} className="flex-1 py-2 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer">
-                                                Edit
-                                            </button>
-                                            <button onClick={() => handleDelete(car.id)} className="flex-1 py-2 rounded-lg border border-red-100 dark:border-red-900/50 text-red-500 dark:text-red-400 text-sm hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer">
-                                                Delete
-                                            </button>
-                                        </>
-                                    ) : (
-                                        <button
-                                            disabled={!car.availability}
-                                            onClick={() => { setBookingModal(car); setBookingForm({ startDate: '', endDate: '' }) }}
-                                            className="flex-1 py-2 rounded-lg bg-blue-700 text-white text-sm font-medium hover:bg-blue-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-                                        >
-                                            Book now
-                                        </button>
-                                    )}
-                                </div>
+                                <button
+                                    disabled={!car.availability}
+                                    onClick={() => { setBookingModal(car); setBookingForm({ startDate: '', endDate: '' }) }}
+                                    className="flex-1 py-2 rounded-lg bg-blue-700 text-white text-sm font-medium hover:bg-blue-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                                >
+                                    Book now
+                                </button>
                             </div>
                         </div>
                     ))}
