@@ -112,9 +112,7 @@ export default function UserBookings() {
                         <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 text-center mb-1" style={{ fontFamily: 'Outfit,sans-serif' }}>
                             Cancel booking?
                         </h3>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 text-center mb-6">
-                            This action cannot be undone. Your booking #{cancelModel} will be permanently cancelled.
-                        </p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 text-center mb-6">Booking #{cancelModel} will be permanently cancelled.</p>
 
                         {/* Buttons */}
                         <div className="flex gap-3">
