@@ -18,7 +18,7 @@ export default function AdminCars() {
             .finally(() => setLoading(false))
     }
 
-    useEffect(() => { fetchCars() }, [])
+    useEffect(() => { fetchCars() }, []);
 
     const openAdd = () => { setForm(emptyForm); setEditId(null); setShowModal(true) }
     const openEdit = (car) => {
