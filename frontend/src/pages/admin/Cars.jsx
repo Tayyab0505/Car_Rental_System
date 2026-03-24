@@ -33,7 +33,9 @@ export default function AdminCars() {
             else await API.post('/addCar', form)
             setShowModal(false)
             fetchCars()
-        } catch { setMsg('Failed to save car') }
+        } catch {
+            setMsg('Failed to save car')
+        }
     }
 
     const handleDelete = async (id) => {
