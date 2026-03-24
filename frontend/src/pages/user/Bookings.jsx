@@ -21,7 +21,7 @@ export default function UserBookings() {
 
     useEffect(() => {
         fetchBookings()
-    }, [])
+    }, []);
 
     const handleCancel = async () => {
         try {
