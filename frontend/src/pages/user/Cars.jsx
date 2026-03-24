@@ -12,7 +12,7 @@ export default function UserCars() {
         API.get('/findAllCar')
             .then(r => setCars(r.data))
             .finally(() => setLoading(false))
-    }, [])
+    }, []);
 
     const handleBook = async () => {
         try {
