@@ -31,7 +31,7 @@ export default function UserBookings() {
             setMsg('Booking cancelled')
         }
         catch { setMsg('Failed to cancel') }
-    }
+    };
 
     const statusStyle = (s) => ({
         confirmed: 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400',
