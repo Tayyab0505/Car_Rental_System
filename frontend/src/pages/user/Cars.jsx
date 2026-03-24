@@ -20,7 +20,7 @@ export default function UserCars() {
             setBookingModal(null)
             setMsg('Booking created successfully!')
         } catch { setMsg('Booking failed') }
-    }
+    };
 
     return (
         <div className="p-8">
