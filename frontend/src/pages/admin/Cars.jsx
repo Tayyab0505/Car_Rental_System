@@ -40,6 +40,7 @@ export default function AdminCars() {
 
     const handleDelete = async (id) => {
         if (!window.confirm('Delete this car?')) return
+        
         try { await API.delete(`/deleteCar/${id}`); fetchCars() }
         catch { setMsg('Failed to delete') }
     }
