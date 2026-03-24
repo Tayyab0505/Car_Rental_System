@@ -45,7 +45,9 @@ export default function AdminCars() {
             await API.delete(`/deleteCar/${id}`);
             fetchCars()
         }
-        catch { setMsg('Failed to delete') }
+        catch {
+            setMsg('Failed to delete')
+        }
     }
 
     return (
