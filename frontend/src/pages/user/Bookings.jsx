@@ -20,7 +20,7 @@ export default function UserBookings() {
     }
 
     useEffect(() => {
-        fetchBookings()
+        // fetchBookings()
     }, []);
 
     const handleCancel = async () => {
