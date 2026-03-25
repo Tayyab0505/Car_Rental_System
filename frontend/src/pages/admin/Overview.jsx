@@ -85,9 +85,13 @@ export default function Overview() {
                 <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Welcome back — here's what's happening today</p>
             </div>
 
+            {/* Stat Cards */}
+
             <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
                 {stats.map(s => <StatCard key={s.label} {...s} />)}
             </div>
+
+            {/* Recent bookings table */}
 
             <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
                 <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700">
