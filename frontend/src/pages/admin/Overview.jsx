@@ -40,8 +40,9 @@ export default function Overview() {
     const totalPages = Math.ceil(bookings.length / rowLimit)
     const paginated = bookings.slice((page - 1) * rowLimit, page * rowLimit);
 
-    const handleLimitChange = (val)=>{
-
+    const handleLimitChange = (val) => {
+        setRowLimit(Number(val))
+        setPage(1)
     }
 
     const stats = [
