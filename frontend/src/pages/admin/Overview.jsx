@@ -94,6 +94,10 @@ export default function Overview() {
             {/* Recent bookings table */}
 
             <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
+
+                {/* Table header with row limit selector */}
+                
+
                 <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700">
                     <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100" style={{ fontFamily: 'Outfit,sans-serif' }}>Recent bookings</h2>
                 </div>
