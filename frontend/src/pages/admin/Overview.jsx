@@ -101,7 +101,7 @@ export default function Overview() {
                 <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
                     <div>
                         <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100" style={{ fontFamily: 'Outfit,sans-serif' }}>Recent bookings</h2>
-                        <p>Showing {paginated.length} of {bookings.length} bookings</p>
+                        <p className='text-xs text-slate-400 dark:text-slate-500 mt-0.5'>Showing {paginated.length} of {bookings.length} bookings</p>
                     </div>
                 </div>
                 <div className="overflow-x-auto">
