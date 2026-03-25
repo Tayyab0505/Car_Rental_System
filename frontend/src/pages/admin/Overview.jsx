@@ -38,6 +38,7 @@ export default function Overview() {
     const availableCars = cars.filter(c => c.availability).length
 
     const totalPages = Math.ceil(bookings.length / rowLimit)
+    const paginated = bookings.slice((page - 1) * rowLimit, page * rowLimit);
 
     const stats = [
         {
