@@ -19,6 +19,7 @@ export default function Overview() {
     const [bookings, setBookings] = useState([])
     const [loading, setLoading] = useState(true)
     const [rowLimit, setRowLimit] = useState(5)
+    const [page, setPage] = useState()
 
     useEffect(() => {
         Promise.all([API.get('/findAllCar'), API.get('/getAllBooking')])
