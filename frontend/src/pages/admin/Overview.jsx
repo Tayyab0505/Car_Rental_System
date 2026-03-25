@@ -17,8 +17,8 @@ const StatCard = ({ label, value, icon, color, sub }) => (
 export default function Overview() {
     const [cars, setCars] = useState([])
     const [bookings, setBookings] = useState([])
-    const [rowLimit, setRowLimit] = useState(5)
     const [loading, setLoading] = useState(true)
+    const [rowLimit, setRowLimit] = useState(5)
 
     useEffect(() => {
         Promise.all([API.get('/findAllCar'), API.get('/getAllBooking')])
