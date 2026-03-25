@@ -17,6 +17,7 @@ const StatCard = ({ label, value, icon, color, sub }) => (
 export default function Overview() {
     const [cars, setCars] = useState([])
     const [bookings, setBookings] = useState([])
+    const [rowLimit, setRowLimit] = useState()
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
@@ -35,8 +36,10 @@ export default function Overview() {
     const pendingBookings = bookings.filter(b => b.status === 'pending').length
     const availableCars = cars.filter(c => c.availability).length
 
+    const totalPages = Math.ceil(bookings.length / rowLimit)
+
     const stats = [
-        {   
+        {
             label: 'Total cars', value: loading ? '...' : cars.length,
             sub: `${availableCars} available`,
             color: 'bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400',
