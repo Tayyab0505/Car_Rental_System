@@ -146,6 +146,22 @@ export default function Overview() {
                         </tbody>
                     </table>
                 </div>
+
+                {/* Pagination footer */}
+
+                {totalPages > 1 && (
+                    <div className='px-6 py-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between'>
+                        <span className='text-xs text-slate-400 dark:text-slate-500'>
+                            Page {page} of {totalPages}
+                        </span>
+
+                        <div className='flex items-center gap-1'>
+                            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>
+
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     )
