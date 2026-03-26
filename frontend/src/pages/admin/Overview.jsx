@@ -103,6 +103,13 @@ export default function Overview() {
                         <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100" style={{ fontFamily: 'Outfit,sans-serif' }}>Recent bookings</h2>
                         <p className='text-xs text-slate-400 dark:text-slate-500 mt-0.5'>Showing {paginated.length} of {bookings.length} bookings</p>
                     </div>
+
+                    {/* Rows per page */}
+
+                    <div className='flex items-center gap-2'>
+                        <span className='text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap'>Rows per page</span>
+                        
+                    </div>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
