@@ -97,7 +97,6 @@ export default function Overview() {
 
                 {/* Table header with row limit selector */}
 
-
                 <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
                     <div>
                         <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100" style={{ fontFamily: 'Outfit,sans-serif' }}>Recent bookings</h2>
@@ -108,9 +107,17 @@ export default function Overview() {
 
                     <div className='flex items-center gap-2'>
                         <span className='text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap'>Rows per page</span>
-                        
+                        <select value={rowLimit}
+                            onChange={e => handleLimitChange(e.target.value)}
+                            className='text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500 cursor-pointer transition-colors'>
+                            {[5, 10, 20, 25, 50].map(n => (
+                                <option key={n} value={n}>{n}</option>
+                            ))}
+                        </select>
                     </div>
                 </div>
+
+                {/* table */}
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                         <thead>
