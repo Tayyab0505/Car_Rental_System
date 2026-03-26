@@ -157,7 +157,7 @@ export default function Overview() {
 
                         <div className='flex items-center gap-1'>
                             <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className='w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer'>
-
+{/* Prev */}
                             </button>
                         </div>
                     </div>
