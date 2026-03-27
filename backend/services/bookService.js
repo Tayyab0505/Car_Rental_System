@@ -120,7 +120,7 @@ const getBookingById = async (id) => {
 };
 
 const getByUserId = async (userId) => {
-    const bookings = await Booking.findAll({ where: { userId } });
+    const bookings = await Booking.findAll({ where: { userId }, order: [['createdAt', 'DESC']] });
     return bookings;
 }
 

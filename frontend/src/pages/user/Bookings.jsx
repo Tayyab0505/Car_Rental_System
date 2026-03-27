@@ -6,22 +6,24 @@ export default function UserBookings() {
     const { user } = useAuth()
     const [bookings, setBookings] = useState([])
     const [loading, setLoading] = useState(true)
+    const [error, setError] = useState('')
     const [msg, setMsg] = useState('')
     const [cancelModel, setCancelModel] = useState(null)
 
     const fetchBookings = () => {
         setLoading(true)
-        API.get('/getAllBooking')
-            .then(r => {
-                const all = Array.isArray(r.data) ? r.data : []
-                setBookings(all.filter(b => b.userId === user?.id))
-            })
+        setError('')
+        API.get('/getBookingsByUser/${user?.id}')
+            .then(r => setBookings(Array.isArray(r.data) ? r.data : []))
+            .catch(() => setError('Failed to load bookings. Please try again'))
             .finally(() => setLoading(false))
     }
 
     useEffect(() => {
-        // fetchBookings()
-    }, []);
+        if (user?.id) {
+            fetchBookings()
+        }
+    }, [user?.id]);
 
     const handleCancel = async () => {
         try {
@@ -29,8 +31,9 @@ export default function UserBookings() {
             setCancelModel(null)
             fetchBookings()
             setMsg('Booking cancelled')
+            setTimeout(() => setMsg(''), 3000)
         }
-        catch { setMsg('Failed to cancel') }
+        catch { setMsg('Failed to cancel booking') }
     };
 
     const statusStyle = (s) => ({
@@ -56,12 +59,18 @@ export default function UserBookings() {
                 </div>
             )}
 
+            {error && (
+                <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-600 dark:text-red-400 rounded-xl text-sm">
+                    {error}
+                </div>
+            )}
+
             <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80">
-                                {['Booking ID', 'User ID', 'Car ID', 'Start date', 'End date', 'Total', 'Status', 'Actions'].map(h => (
+                                {['Booking ID', 'Car ID', 'Start date', 'End date', 'Total', 'Status', 'Actions'].map(h => (
                                     <th key={h} className="text-left px-6 py-3.5 text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
                                 ))}
                             </tr>
@@ -74,7 +83,6 @@ export default function UserBookings() {
                             ) : bookings.map(b => (
                                 <tr key={b.id} className="border-b border-slate-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                                     <td className="px-6 py-4 font-mono text-xs text-slate-500 dark:text-slate-400">#{b.id}</td>
-                                    <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{b.userId}</td>
                                     <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{b.carId}</td>
                                     <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{b.startDate?.slice(0, 10)}</td>
                                     <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{b.endDate?.slice(0, 10)}</td>

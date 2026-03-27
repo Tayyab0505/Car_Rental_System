@@ -67,7 +67,7 @@ export default function UserCars() {
                                 <button
                                     disabled={!car.availability}
                                     onClick={() => { setBookingModal(car); setBookingForm({ startDate: '', endDate: '' }) }}
-                                    className="flex-1 py-2 rounded-lg bg-blue-700 text-white text-sm font-medium hover:bg-blue-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                                    className="flex-1 py-2 px-2 rounded-lg bg-blue-700 text-white text-sm font-medium hover:bg-blue-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                                 >
                                     Book now
                                 </button>
