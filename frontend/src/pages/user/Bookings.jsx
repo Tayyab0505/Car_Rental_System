@@ -10,30 +10,37 @@ export default function UserBookings() {
     const [msg, setMsg] = useState('')
     const [cancelModel, setCancelModel] = useState(null)
 
-    const fetchBookings = () => {
-        setLoading(true)
-        setError('')
-        API.get('/getBookingsByUser/${user?.id}')
-            .then(r => setBookings(Array.isArray(r.data) ? r.data : []))
-            .catch(() => setError('Failed to load bookings. Please try again'))
-            .finally(() => setLoading(false))
-    }
-
     useEffect(() => {
-        if (user?.id) {
-            fetchBookings()
+        if (!user?.id) return
+
+        const fetchBookings = () => {
+            setLoading(true)
+            setError('')
+            API.get(`/getBookingsByUser/${user?.id}`)
+                .then(r => setBookings(Array.isArray(r.data) ? r.data : []))
+                .catch(() => setError('Failed to load bookings. Please try again'))
+                .finally(() => setLoading(false))
         }
+
+        fetchBookings()
+
     }, [user?.id]);
 
     const handleCancel = async () => {
         try {
             await API.delete(`/cancelBooking/${cancelModel}`);
             setCancelModel(null)
-            fetchBookings()
+
+            setLoading(true)
+            API.get(`/getBookingsByUser/${user?.id}`)
+                .then(r => setBookings(Array.isArray(r.data) ? r.data : []))
+                .catch(() => setError('Failed to refresh bookings'))
+                .finally(() => setLoading(false))
             setMsg('Booking cancelled')
             setTimeout(() => setMsg(''), 3000)
         }
         catch { setMsg('Failed to cancel booking') }
+        setTimeout(() => setMsg(''), 3000)
     };
 
     const statusStyle = (s) => ({
