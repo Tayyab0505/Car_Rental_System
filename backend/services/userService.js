@@ -6,7 +6,7 @@ const models = initModels(sequelize);
 const User = models.user;
 
 const register = async (data) => {
-    const { name, email, password, role } = data;
+    const { name, email, password } = data;
 
     if (!name || !email || !password) {
         throw new Error("Please fill all the fields");
