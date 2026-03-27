@@ -14,6 +14,60 @@ const StatCard = ({ label, value, icon, color, sub }) => (
     </div>
 )
 
+const Pagination = ({ page, totalPages, setPage }) => {
+    if (totalPages <= 1) {
+        return null
+    }
+
+    const pages = Array.from({ length: totalPages }, (_, i) => i + 1)
+        .filter(n => n === 1 || n === totalPages || Math.abs(n - page) <= 1)
+        .reduce((acc, n, i, arr) => {
+            if (i > 0 && n - arr[i - 1] > 1) {
+                acc.push('...')
+            }
+            acc.push(n)
+            return acc
+        }, [])
+
+    return (
+        <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
+            <span className="text-xs text-slate-400 dark:text-slate-500">Page {page} of {totalPages}</span>
+            <div className="flex items-center gap-1">
+                <button
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /></svg>
+                </button>
+                {pages.map((n, i) =>
+                    n === '...' ? (
+                        <span key={`dot-${i}`} className="w-8 h-8 flex items-center justify-center text-xs text-slate-400 dark:text-slate-500">...</span>
+                    ) : (
+                        <button
+                            key={n}
+                            onClick={() => setPage(n)}
+                            className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors cursor-pointer ${page === n
+                                ? 'bg-blue-700 text-white border border-blue-700'
+                                : 'border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
+                                }`}
+                        >
+                            {n}
+                        </button>
+                    )
+                )}
+                <button
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" /></svg>
+                </button>
+            </div>
+        </div>
+    )
+}
+
 export default function Overview() {
     const [cars, setCars] = useState([])
     const [bookings, setBookings] = useState([])
@@ -129,8 +183,17 @@ export default function Overview() {
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan={7} className="text-center py-10 text-slate-400 dark:text-slate-500">Loading...</td></tr>
-                            ) : bookings.slice(0, 6).map(b => (
+                                <tr>
+                                    <td colSpan={7} className="text-center py-10">
+                                        <div className="flex flex-col items-center gap-3">
+                                            <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                                            <span className="text-slate-400 dark:text-slate-500 text-sm">Loading...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : paginated.length === 0 ? (
+                                <tr><td colSpan={7} className="text-center py-10 text-slate-400 dark:text-slate-500">No bookings found</td></tr>
+                            ) : paginated.map(b => (
                                 <tr key={b.id} className="border-b border-slate-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                                     <td className="px-6 py-3.5 text-slate-600 dark:text-slate-400 font-mono text-xs">#{b.id}</td>
                                     <td className="px-6 py-3.5 text-slate-600 dark:text-slate-400">{b.userId}</td>
@@ -147,52 +210,7 @@ export default function Overview() {
                     </table>
                 </div>
 
-                {/* Pagination footer */}
-
-                {totalPages > 1 && (
-                    <div className='px-6 py-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between'>
-                        <span className='text-xs text-slate-400 dark:text-slate-500'>
-                            Page {page} of {totalPages}
-                        </span>
-
-                        <div className='flex items-center gap-1'>
-                            {/* Prev */}
-                            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className='w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer'>
-                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                                    <path d="M15 18l-6-6 6-6" />
-                                </svg>
-                            </button>
-
-                            {Array.from({ length: totalPages }, (_, i) => i + 1)
-                                .filter(n => n == 1 || n === totalPages || Math.abs(n - page) <= 1)
-                                .reduce((acc, n, i, arr) => {
-                                    if (i > 0 && n - arr[i - 1] > 1) {
-                                        acc.push('...')
-                                    }
-                                    acc.push(n)
-                                    return acc
-                                }, [])
-                                .map((n, i) => n === '...' ? (
-                                    <span key={`dot-${i}`} className="w-8 h-8 flex items-center justify-center text-xs text-slate-400 dark:text-slate-500">...</span>
-                                ) : (
-                                    <button key={n} onClick={() => setPage(n)} className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors cursor-pointer ${page === n
-                                        ? 'bg-blue-700 text-white border border-blue-700'
-                                        : 'border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
-                                        }`}>
-                                        {n}
-                                    </button>
-                                ))
-                            }
-
-                            {/* Next */}
-                            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
-                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                                    <path d="M9 18l6-6-6-6" />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                )}
+                <Pagination page={page} totalPages={totalPages} setPage={setPage} />
             </div>
         </div>
     )
