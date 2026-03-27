@@ -16,7 +16,7 @@ export default function Dashboard() {
     return (
         <div className="flex min-h-screen bg-slate-50 dark:bg-slate-900">
             <Sidebar />
-            <main className="flex-1 overflow-auto bg-slate-50 dark:bg-slate-900">
+            <main className="flex-1 h-screen overflow-y-auto bg-slate-50 dark:bg-slate-900">
                 <Routes>
                     <Route path="/" element={<Navigate to={isAdmin ? 'overview' : 'cars'} />} />
                     {isAdmin ? (

@@ -2,6 +2,41 @@ import { useEffect, useState } from 'react'
 import API from '../../api/axios'
 import { useAuth } from '../../context/AuthContext'
 
+const Pagination = ({ page, totalPages, setPage }) => {
+    if (totalPages <= 1) return null
+    const pages = Array.from({ length: totalPages }, (_, i) => i + 1)
+        .filter(n => n === 1 || n === totalPages || Math.abs(n - page) <= 1)
+        .reduce((acc, n, i, arr) => {
+            if (i > 0 && n - arr[i - 1] > 1) acc.push('...')
+            acc.push(n)
+            return acc
+        }, [])
+    return (
+        <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
+            <span className="text-xs text-slate-400 dark:text-slate-500">Page {page} of {totalPages}</span>
+            <div className="flex items-center gap-1">
+                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /></svg>
+                </button>
+                {pages.map((n, i) => n === '...' ? (
+                    <span key={`dot-${i}`} className="w-8 h-8 flex items-center justify-center text-xs text-slate-400">...</span>
+                ) : (
+                    <button key={n} onClick={() => setPage(n)}
+                        className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors cursor-pointer ${page === n ? 'bg-blue-700 text-white border border-blue-700' : 'border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
+                            }`}>
+                        {n}
+                    </button>
+                ))}
+                <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" /></svg>
+                </button>
+            </div>
+        </div>
+    )
+}
+
 export default function UserBookings() {
     const { user } = useAuth()
     const [bookings, setBookings] = useState([])
@@ -9,6 +44,8 @@ export default function UserBookings() {
     const [error, setError] = useState('')
     const [msg, setMsg] = useState('')
     const [cancelModel, setCancelModel] = useState(null)
+    const [rowLimit, setRowLimit] = useState(5)
+    const [page, setPage] = useState(1)
 
     useEffect(() => {
         if (!user?.id) return
@@ -25,6 +62,10 @@ export default function UserBookings() {
         fetchBookings()
 
     }, [user?.id]);
+
+    const totalPages = Math.ceil(bookings.length / rowLimit) || 1
+    const paginated = bookings.slice((page - 1) * rowLimit, page * rowLimit)
+    const handleLimitChange = (val) => { setRowLimit(Number(val)); setPage(1) }
 
     const handleCancel = async () => {
         try {
@@ -72,7 +113,26 @@ export default function UserBookings() {
                 </div>
             )}
 
-            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
+                <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
+
+                    <div>
+                        <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100" style={{ fontFamily: 'Outfit,sans-serif' }}>Bookings</h2>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Showing {paginated.length} of {bookings.length} bookings</p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap">Rows per page</span>
+                        <select
+                            value={rowLimit}
+                            onChange={e => handleLimitChange(e.target.value)}
+                            className="text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500 cursor-pointer"
+                        >
+                            {[5, 10, 20, 25, 50].map(n => <option key={n} value={n}>{n}</option>)}
+                        </select>
+                    </div>
+                </div>
+
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                         <thead>
@@ -84,10 +144,34 @@ export default function UserBookings() {
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan={8} className="text-center py-16 text-slate-400 dark:text-slate-500">Loading bookings...</td></tr>
-                            ) : bookings.length === 0 ? (
-                                <tr><td colSpan={8} className="text-center py-16 text-slate-400 dark:text-slate-500">No bookings found</td></tr>
-                            ) : bookings.map(b => (
+                                <tr>
+                                    <td colSpan={7} className="text-center py-16">
+                                        <div className="flex flex-col items-center gap-3">
+                                            <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                                            <span className="text-slate-400 dark:text-slate-500 text-sm">
+                                                Loading bookings...
+                                            </span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : paginated.length === 0 ? (
+                                <tr>
+                                    <td colSpan={7} className="text-center py-16">
+                                        <div className="flex flex-col items-center gap-3">
+                                            <div className="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center">
+                                                <svg className="w-6 h-6 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                                                    <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
+                                                </svg>
+                                            </div>
+
+                                            <div>
+                                                <p className="text-slate-600 dark:text-slate-400 font-medium text-sm">No bookings yet</p>
+                                                <p className="text-slate-400 dark:text-slate-500 text-xs mt-0.5">Browse cars and make your first booking</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : paginated.map(b => (
                                 <tr key={b.id} className="border-b border-slate-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                                     <td className="px-6 py-4 font-mono text-xs text-slate-500 dark:text-slate-400">#{b.id}</td>
                                     <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{b.carId}</td>
@@ -110,6 +194,7 @@ export default function UserBookings() {
                         </tbody>
                     </table>
                 </div>
+                <Pagination page={page} totalPages={totalPages} setPage={setPage} />
             </div>
 
             {cancelModel && (

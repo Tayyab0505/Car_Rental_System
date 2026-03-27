@@ -112,21 +112,24 @@ export default function AdminBookings() {
     }[s] || 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400')
 
     return (
-        <div className="p-8">
+        <div className="p-8 min-h-screen">
             <div className="mb-8">
                 <h1 className="text-2xl font-semibold text-slate-800 dark:text-slate-100" style={{ fontFamily: 'Outfit,sans-serif' }}>All bookings</h1>
                 <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Manage and confirm customer bookings</p>
             </div>
 
-            {msg && <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 rounded-xl text-sm">{msg}</div>}
+            {msg && (
+                <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 rounded-xl text-sm">
+                    {msg}
+                </div>
+            )}
 
             <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
-                <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between flex-wrap gap-4">
+                <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
                     <div>
                         <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100" style={{ fontFamily: 'Outfit,sans-serif' }}>Bookings</h2>
                         <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Showing {paginated.length} of {bookings.length} bookings</p>
                     </div>
-
                     <div className="flex items-center gap-2">
                         <span className="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap">Rows per page</span>
                         <select
@@ -138,56 +141,61 @@ export default function AdminBookings() {
                         </select>
                     </div>
                 </div>
-            </div>
 
-            <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                    <thead>
-                        <tr className="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80">
-                            {['Booking ID', 'User ID', 'Car ID', 'Start date', 'End date', 'Total', 'Status', 'Actions'].map(h => (
-                                <th key={h} className="text-left px-6 py-3.5 text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                        <thead>
+                            <tr className="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80">
+                                {['Booking ID', 'User ID', 'Car ID', 'Start date', 'End date', 'Total', 'Status', 'Actions'].map(h => (
+                                    <th key={h} className="text-left px-6 py-3.5 text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {loading ? (
+                                <tr>
+                                    <td colSpan={8} className="text-center py-16">
+                                        <div className="flex flex-col items-center gap-3">
+                                            <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                                            <span className="text-slate-400 dark:text-slate-500 text-sm">Loading bookings...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : paginated.length === 0 ? (
+                                <tr><td colSpan={8} className="text-center py-16 text-slate-400 dark:text-slate-500">No bookings found</td></tr>
+                            ) : paginated.map(b => (
+                                <tr key={b.id} className="border-b border-slate-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                                    <td className="px-6 py-4 font-mono text-xs text-slate-500 dark:text-slate-400">#{b.id}</td>
+                                    <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{b.userId}</td>
+                                    <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{b.carId}</td>
+                                    <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{b.startDate?.slice(0, 10)}</td>
+                                    <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{b.endDate?.slice(0, 10)}</td>
+                                    <td className="px-6 py-4 font-semibold text-slate-800 dark:text-slate-200">${Number(b.totalAmount || 0).toLocaleString()}</td>
+                                    <td className="px-6 py-4">
+                                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusStyle(b.status)}`}>{b.status}</span>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-2">
+                                            {b.status === 'pending' && (
+                                                <button onClick={() => handleConfirm(b.id)} className="px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-medium hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors cursor-pointer whitespace-nowrap border border-emerald-100 dark:border-emerald-800">
+                                                    Confirm
+                                                </button>
+                                            )}
+                                            {b.status !== 'cancelled' && (
+                                                <button onClick={() => setCancelModel(b.id)} className="px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-medium hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors cursor-pointer whitespace-nowrap border border-red-100 dark:border-red-800">
+                                                    Cancel
+                                                </button>
+                                            )}
+                                        </div>
+                                    </td>
+                                </tr>
                             ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {loading ? (
-                            <tr>
-                                <td colSpan={8} className="text-center py-16 text-slate-400 dark:text-slate-500">Loading bookings...</td>
-                            </tr>
-                        ) : paginated.length === 0 ? (
-                            <tr><td colSpan={8} className="text-center py-16 text-slate-400 dark:text-slate-500">No bookings found</td></tr>
-                        ) : paginated.map(b => (
-                            <tr key={b.id} className="border-b border-slate-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                                <td className="px-6 py-4 font-mono text-xs text-slate-500 dark:text-slate-400">#{b.id}</td>
-                                <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{b.userId}</td>
-                                <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{b.carId}</td>
-                                <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{b.startDate?.slice(0, 10)}</td>
-                                <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{b.endDate?.slice(0, 10)}</td>
-                                <td className="px-6 py-4 font-semibold text-slate-800 dark:text-slate-200">${Number(b.totalAmount || 0).toLocaleString()}</td>
-                                <td className="px-6 py-4">
-                                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusStyle(b.status)}`}>{b.status}</span>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center gap-2">
-                                        {b.status === 'pending' && (
-                                            <button onClick={() => handleConfirm(b.id)} className="px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-medium hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors cursor-pointer whitespace-nowrap border border-emerald-100 dark:border-emerald-800">
-                                                Confirm
-                                            </button>
-                                        )}
-                                        {b.status !== 'cancelled' && (
-                                            <button onClick={() => setCancelModel(b.id)} className="px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-medium hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors cursor-pointer whitespace-nowrap border border-red-100 dark:border-red-800">
-                                                Cancel
-                                            </button>
-                                        )}
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+                        </tbody>
+                    </table>
+                </div>
 
-            <Pagination page={page} totalPages={totalPages} setPage={setPage} />
+                <Pagination page={page} totalPages={totalPages} setPage={setPage} />
+            </div>
 
             {cancelModel && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
