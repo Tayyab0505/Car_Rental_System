@@ -27,7 +27,6 @@ const CarImage = ({ url, alt }) => {
     )
 }
 
-
 export default function AdminCars() {
     const [cars, setCars] = useState([])
     const [loading, setLoading] = useState(true)
@@ -37,18 +36,25 @@ export default function AdminCars() {
     const [deleteModal, setDeleteModal] = useState(null)
     const [msg, setMsg] = useState('')
 
-    const fetchCars = () => {
-        setLoading(true)
-        API.get('/findAllCar')
-            .then(r => setCars(r.data))
-            .finally(() => setLoading(false))
-    }
-
-    useEffect(() => { fetchCars() }, []);
+    useEffect(() => {
+        const fetchCars = () => {
+            setLoading(true)
+            API.get('/findAllCar')
+                .then(r => setCars(r.data))
+                .finally(() => setLoading(false))
+        }
+        fetchCars()
+    }, [])
 
     const openAdd = () => { setForm(emptyForm); setEditId(null); setShowModal(true) }
     const openEdit = (car) => {
-        setForm({ brand: car.brand, model: car.model, pricePerDay: car.pricePerDay, availability: car.availability, imageUrl: car.imageUrl || '' })
+        setForm({
+            brand: car.brand,
+            model: car.model,
+            pricePerDay: car.pricePerDay,
+            availability: car.availability,
+            imageUrl: car.imageUrl || ''
+        })
         setEditId(car.id)
         setShowModal(true)
     }
@@ -58,11 +64,13 @@ export default function AdminCars() {
             if (editId) await API.put(`/updateCar/${editId}`, form)
             else await API.post('/addCar', form)
             setShowModal(false)
-            fetchCars()
+            const response = await API.get('/findAllCar')
+            setCars(response.data)
             setMsg(editId ? 'Car updated successfully' : 'Car added successfully')
             setTimeout(() => setMsg(''), 3000)
         } catch {
             setMsg('Failed to save car')
+            setTimeout(() => setMsg(''), 3000)
         }
     }
 
@@ -70,7 +78,8 @@ export default function AdminCars() {
         try {
             await API.delete(`/deleteCar/${deleteModal}`);
             setDeleteModal(null)
-            fetchCars()
+            const response = await API.get('/findAllCar')
+            setCars(response.data)
             setMsg('Car deleted')
             setTimeout(() => setMsg(''), 2000)
         }
@@ -117,16 +126,10 @@ export default function AdminCars() {
 
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-
                     {cars.map(car => (
                         <div key={car.id} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                            <div className="h-36 bg-gradient-to-br from-blue-50 to-slate-100 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
-                                <svg className="w-20 h-20 text-blue-200 dark:text-blue-900" fill="none" stroke="currentColor" strokeWidth={1} viewBox="0 0 24 24">
-                                    <path d="M5 17H3a2 2 0 01-2-2V9a2 2 0 012-2h1l2-3h10l2 3h1a2 2 0 012 2v6a2 2 0 01-2 2h-2" />
-                                    <circle cx="7" cy="17" r="2" /><circle cx="17" cy="17" r="2" />
-                                    <path d="M5 9h14" />
-                                </svg>
-                            </div>
+
+                            <CarImage url={car.imageUrl} alt={`${car.brand} ${car.model}`} />
 
                             <div className="p-5">
                                 <div className="flex items-start justify-between mb-2">
@@ -168,10 +171,13 @@ export default function AdminCars() {
                             </div>
                         )}
 
-                        {[['Brand', 'brand', 'text', 'e.g. Toyota'], ['Model', 'model', 'text', 'e.g. Corolla'], ['Price per day', 'pricePerDay', 'number', 'e.g. 50']].map(([label, key, type, ph]) => (
+                        {[['Brand', 'brand', 'text', 'e.g. Toyota'], ['Model', 'model', 'text', 'e.g. Corolla'], ['Price per day', 'pricePerDay', 'number', 'e.g. 50'], ['Image URL', 'imageUrl', 'text', 'https://...']].map(([label, key, type, ph]) => (
                             <div key={key} className="mb-4">
                                 <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{label}</label>
-                                <input type={type} placeholder={ph} value={form[key]}
+                                <input
+                                    type={type}
+                                    placeholder={ph}
+                                    value={form[key]}
                                     onChange={e => setForm({ ...form, [key]: e.target.value })}
                                     className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
                                 />
@@ -179,13 +185,18 @@ export default function AdminCars() {
                         ))}
 
                         <div className="mb-6 flex items-center gap-3">
-                            <input type="checkbox" id="avail" checked={form.availability} onChange={e => setForm({ ...form, availability: e.target.checked })} className="w-4 h-4 accent-blue-600" />
+                            <input
+                                type="checkbox"
+                                id="avail"
+                                checked={form.availability}
+                                onChange={e => setForm({ ...form, availability: e.target.checked })}
+                                className="w-4 h-4 accent-blue-600"
+                            />
                             <label htmlFor="avail" className="text-sm text-slate-600 dark:text-slate-300 cursor-pointer">Available for booking</label>
                         </div>
 
                         <div className="flex gap-3">
                             <button onClick={() => setShowModal(false)} className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer transition-colors">Cancel</button>
-
                             <button onClick={handleSave} className="flex-1 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium cursor-pointer transition-colors"> {editId ? 'Save changes' : 'Add car'} </button>
                         </div>
                     </div>
@@ -196,16 +207,12 @@ export default function AdminCars() {
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl border border-slate-100 dark:border-slate-700">
                         <div className="w-12 h-12 bg-red-50 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-
                             <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
-
                         </div>
-
                         <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 text-center mb-1" style={{ fontFamily: 'Outfit,sans-serif' }}>Delete this car?</h3>
                         <p className="text-sm text-slate-500 dark:text-slate-400 text-center mb-6">This action cannot be undone.</p>
-
                         <div className="flex gap-3">
                             <button onClick={() => setDeleteModal(null)} className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer transition-colors">Cancel</button>
                             <button onClick={handleDelete} className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-medium cursor-pointer transition-colors">Yes, delete it</button>
@@ -213,7 +220,6 @@ export default function AdminCars() {
                     </div>
                 </div>
             )}
-
         </div>
     )
 }

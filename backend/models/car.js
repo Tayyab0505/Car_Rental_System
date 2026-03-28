@@ -22,6 +22,10 @@ module.exports = function (sequelize, DataTypes) {
     availability: {
       type: DataTypes.BOOLEAN,
       allowNull: false
+    },
+    imageUrl: {
+      type: DataTypes.TEXT,
+      allowNull: true,
     }
   }, {
     sequelize,
