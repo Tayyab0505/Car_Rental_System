@@ -32,11 +32,47 @@ export default function UserCars() {
     const [bookingForm, setBookingForm] = useState({ startDate: '', endDate: '' })
     const [msg, setMsg] = useState('')
 
+    // Filters
+    const [brandFilter, setBrandFilter] = useState('all')
+    const [sortOrder, setSortOrder] = useState('none')
+    const [minPrice, setMinPrice] = useState(0)
+    const [maxPrice, setMaxPrice] = useState(0)
+    const [sliderMin, setSliderMin] = useState(0)
+    const [sliderMax, setSliderMax] = useState(0)
+
     useEffect(() => {
         API.get('/findAllCar')
-            .then(r => setCars(r.data))
+            .then(r => {
+                const data = r.data
+                setCars(data)
+                if (data.length > 0) {
+                    const prices = data.map(c => Number(c.pricePerDay))
+                    const lo = Math.min(...prices)
+                    const hi = Math.max(...prices)
+                    setMinPrice(lo); setMaxPrice(hi)
+                    setSliderMin(lo); setSliderMax(hi)
+                }
+            })
             .finally(() => setLoading(false))
-    }, []);
+    }, [])
+
+    const brands = useMemo(() => ['all', ...new Set(cars.map(c => c.brand))], [cars])
+
+    const filtered = useMemo(() => {
+        let list = [...cars].filter(c => c.availability)
+        if (brandFilter !== 'all') list = list.filter(c => c.brand === brandFilter)
+        list = list.filter(c => Number(c.pricePerDay) >= sliderMin && Number(c.pricePerDay) <= sliderMax)
+        if (sortOrder === 'asc') list.sort((a, b) => Number(a.pricePerDay) - Number(b.pricePerDay))
+        if (sortOrder === 'desc') list.sort((a, b) => Number(b.pricePerDay) - Number(a.pricePerDay))
+        return list
+    }, [cars, brandFilter, sliderMin, sliderMax, sortOrder])
+
+    const handleSliderMin = (val) => setSliderMin(Math.min(Number(val), sliderMax - 1))
+    const handleSliderMax = (val) => setSliderMax(Math.max(Number(val), sliderMin + 1))
+    const handleInputMin = (val) => setSliderMin(Math.max(minPrice, Math.min(Number(val), sliderMax - 1)))
+    const handleInputMax = (val) => setSliderMax(Math.min(maxPrice, Math.max(Number(val), sliderMin + 1)))
+    const resetFilters = () => { setBrandFilter('all'); setSortOrder('none'); setSliderMin(minPrice); setSliderMax(maxPrice) }
+
 
     const handleBook = async () => {
         try {
@@ -45,6 +81,10 @@ export default function UserCars() {
             setMsg('Booking created successfully!')
         } catch { setMsg('Booking failed') }
     };
+
+    const range = maxPrice - minPrice || 1
+    const leftPct = ((sliderMin - minPrice) / range) * 100
+    const rightPct = 100 - ((sliderMax - minPrice) / range) * 100
 
     return (
         <div className="p-8">
@@ -59,6 +99,37 @@ export default function UserCars() {
                     {msg}
                 </div>
             )}
+
+            {/* FILTER BAR */}
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm p-5 mb-6">
+                <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300" style={{ fontFamily: 'Outfit,sans-serif' }}>Filters</h2>
+                    <button onClick={resetFilters} className="text-xs text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">Reset all</button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                    {/* Brand */}
+                    <div>
+                        <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Brand</label>
+                        <select value={brandFilter} onChange={e => setBrandFilter(e.target.value)}
+                            className="w-full text-sm px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500 cursor-pointer">
+                            {brands.map(b => <option key={b} value={b}>{b === 'all' ? 'All brands' : b}</option>)}
+                        </select>
+                    </div>
+
+                    {/* Sort */}
+                    <div>
+                        <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Sort by price</label>
+                        <select value={sortOrder} onChange={e => setSortOrder(e.target.value)}
+                            className="w-full text-sm px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500 cursor-pointer">
+                            <option value="none">Default</option>
+                            <option value="asc">Low to high</option>
+                            <option value="desc">High to low</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
 
             {loading ? (
                 <div className="flex items-center justify-center py-20 gap-3">
