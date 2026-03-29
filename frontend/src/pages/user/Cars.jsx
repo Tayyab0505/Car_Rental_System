@@ -82,7 +82,7 @@ export default function UserCars() {
                                     <div>
                                         <h3 className="font-semibold text-slate-800 dark:text-slate-100" style={{ fontFamily: 'Outfit,sans-serif' }}>{car.brand} {car.model}</h3>
                                         <p className="text-blue-700 dark:text-blue-400 font-semibold text-lg mt-0.5" style={{ fontFamily: 'Outfit,sans-serif' }}>
-                                            ${car.pricePerDay}<span className="text-slate-400 dark:text-slate-500 text-xs font-normal">/day</span>
+                                            {car.pricePerDay}<span className="text-slate-400 dark:text-slate-500 text-xs font-normal">/day</span>
                                         </p>
                                     </div>
                                     <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${car.availability
