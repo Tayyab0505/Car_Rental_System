@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import API from '../../api/axios'
 
 const CarImage = ({ url, alt }) => {
@@ -128,6 +128,45 @@ export default function UserCars() {
                             <option value="desc">High to low</option>
                         </select>
                     </div>
+
+                    {/* Price range */}
+                    <div>
+                        <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
+                            Price range — <span className="text-blue-600 dark:text-blue-400 font-semibold">${sliderMin.toLocaleString()} – ${sliderMax.toLocaleString()}</span>
+                        </label>
+                        <div className="flex items-center gap-2 mb-3">
+                            <input type="number" value={sliderMin} onChange={e => handleInputMin(e.target.value)}
+                                className="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500" placeholder="Min" />
+                            <span className="text-slate-400 text-xs">—</span>
+                            <input type="number" value={sliderMax} onChange={e => handleInputMax(e.target.value)}
+                                className="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500" placeholder="Max" />
+                        </div>
+                        <div className="relative h-5 flex items-center">
+                            <div className="absolute w-full h-1.5 bg-slate-200 dark:bg-slate-600 rounded-full">
+                                <div className="absolute h-1.5 bg-blue-500 rounded-full" style={{ left: `${leftPct}%`, right: `${rightPct}%` }} />
+                            </div>
+                            <input type="range" min={minPrice} max={maxPrice} value={sliderMin} step={1}
+                                onChange={e => handleSliderMin(e.target.value)}
+                                className="absolute w-full h-1.5 appearance-none bg-transparent cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-600 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md"
+                                style={{ zIndex: sliderMin > maxPrice - 100 ? 5 : 3 }}
+                            />
+                            <input type="range" min={minPrice} max={maxPrice} value={sliderMax} step={1}
+                                onChange={e => handleSliderMax(e.target.value)}
+                                className="absolute w-full h-1.5 appearance-none bg-transparent cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-600 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md"
+                                style={{ zIndex: 4 }}
+                            />
+                        </div>
+                        <div className="flex justify-between mt-1">
+                            <span className="text-xs text-slate-400">${minPrice.toLocaleString()}</span>
+                            <span className="text-xs text-slate-400">${maxPrice.toLocaleString()}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                        Showing <span className="font-semibold text-slate-700 dark:text-slate-300">{filtered.length}</span> available cars
+                    </p>
                 </div>
             </div>
 
@@ -136,37 +175,49 @@ export default function UserCars() {
                     <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
                     <span className="text-slate-400 dark:text-slate-500 text-sm">Loading cars...</span>
                 </div>
-            ) : cars.length === 0 ? (
+            ) : filtered.length === 0 ? (
                 <div className="text-center py-20">
-                    <p className="text-slate-600 dark:text-slate-400 font-medium">No cars available</p>
-                    <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">Check back later</p>
+                    <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                            <path d="M5 17H3a2 2 0 01-2-2V9a2 2 0 012-2h1l2-3h10l2 3h1a2 2 0 012 2v6a2 2 0 01-2 2h-2" /><circle cx="7" cy="17" r="2" /><circle cx="17" cy="17" r="2" />
+                        </svg>
+                    </div>
+                    <p className="text-slate-600 dark:text-slate-400 font-medium">No cars match your filters</p>
+                    <button onClick={resetFilters} className="text-sm text-blue-600 dark:text-blue-400 hover:underline mt-2 cursor-pointer">Reset filters</button>
                 </div>
             ) : (
                 <div div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                    {cars.map(car => (
+                    {filtered.map(car => (
                         <div key={car.id} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-
-                            <CarImage url={car.imageUrl} alt={`${car.brand} ${car.model}`} />
-
+                            {car.imageUrl ? (
+                                <div className="h-44 overflow-hidden bg-slate-100 dark:bg-slate-700">
+                                    <img src={car.imageUrl} alt={`${car.brand} ${car.model}`}
+                                        onError={e => { e.target.parentElement.innerHTML = '<div class="h-44 flex items-center justify-center"><svg class="w-16 h-16 text-slate-300" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path d="M5 17H3a2 2 0 01-2-2V9a2 2 0 012-2h1l2-3h10l2 3h1a2 2 0 012 2v6a2 2 0 01-2 2h-2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg></div>' }}
+                                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                                    />
+                                </div>
+                            ) : (
+                                <div className="h-44 bg-gradient-to-br from-blue-50 to-slate-100 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
+                                    <svg className="w-16 h-16 text-blue-200 dark:text-blue-900" fill="none" stroke="currentColor" strokeWidth={1} viewBox="0 0 24 24">
+                                        <path d="M5 17H3a2 2 0 01-2-2V9a2 2 0 012-2h1l2-3h10l2 3h1a2 2 0 012 2v6a2 2 0 01-2 2h-2" /><circle cx="7" cy="17" r="2" /><circle cx="17" cy="17" r="2" /><path d="M5 9h14" />
+                                    </svg>
+                                </div>
+                            )}
                             <div className="p-5">
                                 <div className="flex items-start justify-between mb-2">
                                     <div>
-                                        <h3 className="font-semibold text-slate-800 dark:text-slate-100" style={{ fontFamily: 'Outfit,sans-serif' }}>{car.brand} {car.model}</h3>
-                                        <p className="text-blue-700 dark:text-blue-400 font-semibold text-lg mt-0.5" style={{ fontFamily: 'Outfit,sans-serif' }}>
-                                            {car.pricePerDay}<span className="text-slate-400 dark:text-slate-500 text-xs font-normal">/day</span>
+                                        <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-base" style={{ fontFamily: 'Outfit,sans-serif' }}>{car.brand} {car.model}</h3>
+                                        <p className="text-blue-700 dark:text-blue-400 font-semibold text-xl mt-0.5" style={{ fontFamily: 'Outfit,sans-serif' }}>
+                                            ${Number(car.pricePerDay).toLocaleString()}<span className="text-slate-400 text-xs font-normal">/day</span>
                                         </p>
                                     </div>
-                                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${car.availability
-                                        ? 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400'
-                                        : 'bg-red-50 dark:bg-red-900/40 text-red-600 dark:text-red-400'
-                                        }`}>
-                                        {car.availability ? 'Available' : 'Unavailable'}
+                                    <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400">
+                                        Available
                                     </span>
                                 </div>
                                 <button
-                                    disabled={!car.availability}
                                     onClick={() => { setBookingModal(car); setBookingForm({ startDate: '', endDate: '' }) }}
-                                    className="flex-1 py-2 px-2 rounded-lg bg-blue-700 text-white text-sm font-medium hover:bg-blue-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                                    className="w-full mt-4 py-2.5 rounded-lg bg-blue-700 text-white text-sm font-medium hover:bg-blue-800 transition-colors cursor-pointer"
                                 >
                                     Book now
                                 </button>
@@ -174,8 +225,7 @@ export default function UserCars() {
                         </div>
                     ))}
                 </div>
-            )
-            }
+            )}
 
             {
                 bookingModal && (
