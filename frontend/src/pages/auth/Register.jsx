@@ -42,13 +42,12 @@ export default function Register() {
                             <circle cx="23" cy="22" r="1.5" fill="#93c5fd" />
                         </svg>
                         <div>
-                            <span className="text-white font-semibold text-sm leading-none block" style={{ fontFamily: 'Cormorant Garamond, serif' }}>Signature</span>
-                            <span className="text-blue-300 font-light text-xs tracking-widest block" style={{ fontFamily: 'Outfit, sans-serif' }}>CARS</span>
+                            <span className="text-white font-semibold text-sm leading-none block" style={{ fontFamily: 'Cormorant Garamond, serif' }}>DriveEase</span>
                         </div>
                     </div>
 
                     <div className="z-10">
-                        <p className="text-blue-300 text-xs font-medium tracking-widest uppercase mb-3">Join SignatureCars</p>
+                        <p className="text-blue-300 text-xs font-medium tracking-widest uppercase mb-3">Join DriveEase</p>
                         <h2 className="text-white text-3xl font-semibold leading-snug mb-3" style={{ fontFamily: 'Outfit,sans-serif' }}>
                             Start your journey<br />with us today
                         </h2>

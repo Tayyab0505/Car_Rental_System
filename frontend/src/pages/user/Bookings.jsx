@@ -91,7 +91,7 @@ export default function UserBookings() {
     }[s] || 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400')
 
     return (
-        <div className="p-8">
+        <div className="p-4 md:p-8 min-h-screen">
             <div className="mb-8">
                 <h1 className="text-2xl font-semibold text-slate-800 dark:text-slate-100" style={{ fontFamily: 'Outfit,sans-serif' }}>
                     My bookings

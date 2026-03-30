@@ -133,7 +133,7 @@ export default function Overview() {
     }[s] || 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400')
 
     return (
-        <div className="p-8">
+        <div className="p-4 md:p-8 min-h-screen">
             <div className="mb-8">
                 <h1 className="text-2xl font-semibold text-slate-800 dark:text-slate-100" style={{ fontFamily: 'Outfit,sans-serif' }}>Overview</h1>
                 <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Welcome back — here's what's happening today</p>
@@ -141,7 +141,7 @@ export default function Overview() {
 
             {/* Stat Cards */}
 
-            <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
                 {stats.map(s => <StatCard key={s.label} {...s} />)}
             </div>
 
@@ -173,7 +173,7 @@ export default function Overview() {
 
                 {/* table */}
                 <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
+                    <table className="w-full text-sm min-w-[600px]">
                         <thead>
                             <tr className="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
                                 {['ID', 'User ID', 'Car ID', 'Start', 'End', 'Amount', 'Status'].map(h => (

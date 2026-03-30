@@ -45,8 +45,7 @@ export default function Login() {
                             <circle cx="23" cy="22" r="1.5" fill="#93c5fd" />
                         </svg>
                         <div>
-                            <span className="text-white font-semibold text-sm leading-none block" style={{ fontFamily: 'Cormorant Garamond, serif' }}>Signature</span>
-                            <span className="text-blue-300 font-light text-xs tracking-widest block" style={{ fontFamily: 'Outfit, sans-serif' }}>CARS</span>
+                            <span className="text-white font-semibold text-sm leading-none block" style={{ fontFamily: 'Cormorant Garamond, serif' }}>DriveEase</span>
                         </div>
                     </div>
 
@@ -124,7 +123,7 @@ export default function Login() {
                             className="w-full py-2.5 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-60 mt-2 cursor-pointer"
                             style={{ fontFamily: 'Outfit,sans-serif' }}
                         >
-                            {loading ? 'Signing in...' : 'Sign in to SignatureCars'}
+                            {loading ? 'Signing in...' : 'Sign in to DriveEase'}
                         </button>
                     </form>
 

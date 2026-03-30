@@ -39,6 +39,7 @@ export default function UserCars() {
     const [maxPrice, setMaxPrice] = useState(0)
     const [sliderMin, setSliderMin] = useState(0)
     const [sliderMax, setSliderMax] = useState(0)
+    const [filtersOpen, setFiltersOpen] = useState(false)
 
     useEffect(() => {
         API.get('/findAllCar')
@@ -87,7 +88,7 @@ export default function UserCars() {
     const rightPct = 100 - ((sliderMax - minPrice) / range) * 100
 
     return (
-        <div className="p-8">
+        <div className="p-4 md:p-8 min-h-screen">
 
             <div className="mb-8">
                 <h1 className="text-2xl font-semibold text-slate-800 dark:text-slate-100" style={{ fontFamily: 'Outfit,sans-serif' }}>Browse cars</h1>
@@ -101,74 +102,135 @@ export default function UserCars() {
             )}
 
             {/* FILTER BAR */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm p-5 mb-6">
-                <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300" style={{ fontFamily: 'Outfit,sans-serif' }}>Filters</h2>
-                    <button onClick={resetFilters} className="text-xs text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">Reset all</button>
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm mb-6">
+
+                {/* Filter header — always visible */}
+                <div
+                    className="flex items-center justify-between p-4 cursor-pointer"
+                    onClick={() => setFiltersOpen(prev => !prev)}
+                >
+                    <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                            <path d="M3 6h18M6 12h12M10 18h4" />
+                        </svg>
+                        <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300" style={{ fontFamily: 'Outfit,sans-serif' }}>
+                            Filters
+                        </h2>
+                        {/* Active filter indicator */}
+                        {(brandFilter !== 'all' || sortOrder !== 'none' || sliderMin !== minPrice || sliderMax !== maxPrice) && (
+                            <span className="w-2 h-2 rounded-full bg-blue-500" />
+                        )}
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={e => { e.stopPropagation(); resetFilters() }}
+                            className="text-xs text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                        >
+                            Reset all
+                        </button>
+                        <svg
+                            className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${filtersOpen ? 'rotate-180' : ''}`}
+                            fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"
+                        >
+                            <path d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Filter body — collapsible */}
+                {filtersOpen && (
+                    <div className="px-4 pb-5 border-t border-slate-100 dark:border-slate-700">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 pt-4">
 
-                    {/* Brand */}
-                    <div>
-                        <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Brand</label>
-                        <select value={brandFilter} onChange={e => setBrandFilter(e.target.value)}
-                            className="w-full text-sm px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500 cursor-pointer">
-                            {brands.map(b => <option key={b} value={b}>{b === 'all' ? 'All brands' : b}</option>)}
-                        </select>
-                    </div>
-
-                    {/* Sort */}
-                    <div>
-                        <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Sort by price</label>
-                        <select value={sortOrder} onChange={e => setSortOrder(e.target.value)}
-                            className="w-full text-sm px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500 cursor-pointer">
-                            <option value="none">Default</option>
-                            <option value="asc">Low to high</option>
-                            <option value="desc">High to low</option>
-                        </select>
-                    </div>
-
-                    {/* Price range */}
-                    <div>
-                        <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
-                            Price range — <span className="text-blue-600 dark:text-blue-400 font-semibold">${sliderMin.toLocaleString()} – ${sliderMax.toLocaleString()}</span>
-                        </label>
-                        <div className="flex items-center gap-2 mb-3">
-                            <input type="number" value={sliderMin} onChange={e => handleInputMin(e.target.value)}
-                                className="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500" placeholder="Min" />
-                            <span className="text-slate-400 text-xs">—</span>
-                            <input type="number" value={sliderMax} onChange={e => handleInputMax(e.target.value)}
-                                className="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500" placeholder="Max" />
-                        </div>
-                        <div className="relative h-5 flex items-center">
-                            <div className="absolute w-full h-1.5 bg-slate-200 dark:bg-slate-600 rounded-full">
-                                <div className="absolute h-1.5 bg-blue-500 rounded-full" style={{ left: `${leftPct}%`, right: `${rightPct}%` }} />
+                            {/* Brand */}
+                            <div>
+                                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Brand</label>
+                                <select
+                                    value={brandFilter}
+                                    onChange={e => setBrandFilter(e.target.value)}
+                                    className="w-full text-sm px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500 cursor-pointer"
+                                >
+                                    {brands.map(b => <option key={b} value={b}>{b === 'all' ? 'All brands' : b}</option>)}
+                                </select>
                             </div>
-                            <input type="range" min={minPrice} max={maxPrice} value={sliderMin} step={1}
-                                onChange={e => handleSliderMin(e.target.value)}
-                                className="absolute w-full h-1.5 appearance-none bg-transparent cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-600 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md"
-                                style={{ zIndex: sliderMin > maxPrice - 100 ? 5 : 3 }}
-                            />
-                            <input type="range" min={minPrice} max={maxPrice} value={sliderMax} step={1}
-                                onChange={e => handleSliderMax(e.target.value)}
-                                className="absolute w-full h-1.5 appearance-none bg-transparent cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-600 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md"
-                                style={{ zIndex: 4 }}
-                            />
+
+                            {/* Sort */}
+                            <div>
+                                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Sort by price</label>
+                                <select
+                                    value={sortOrder}
+                                    onChange={e => setSortOrder(e.target.value)}
+                                    className="w-full text-sm px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500 cursor-pointer"
+                                >
+                                    <option value="none">Default</option>
+                                    <option value="asc">Low to high</option>
+                                    <option value="desc">High to low</option>
+                                </select>
+                            </div>
+
+                            {/* Price range */}
+                            <div className="sm:col-span-2 lg:col-span-1">
+                                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
+                                    Price range —{' '}
+                                    <span className="text-blue-600 dark:text-blue-400 font-semibold">
+                                        ${sliderMin.toLocaleString()} – ${sliderMax.toLocaleString()}
+                                    </span>
+                                </label>
+
+                                {/* Min/Max inputs */}
+                                <div className="flex items-center gap-2 mb-3">
+                                    <input
+                                        type="number" value={sliderMin}
+                                        onChange={e => handleInputMin(e.target.value)}
+                                        className="w-full text-xs px-2.5 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500"
+                                        placeholder="Min"
+                                    />
+                                    <span className="text-slate-400 text-xs flex-shrink-0">—</span>
+                                    <input
+                                        type="number" value={sliderMax}
+                                        onChange={e => handleInputMax(e.target.value)}
+                                        className="w-full text-xs px-2.5 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500"
+                                        placeholder="Max"
+                                    />
+                                </div>
+
+                                {/* Dual slider */}
+                                <div className="relative h-5 flex items-center">
+                                    <div className="absolute w-full h-1.5 bg-slate-200 dark:bg-slate-600 rounded-full">
+                                        <div
+                                            className="absolute h-1.5 bg-blue-500 rounded-full"
+                                            style={{ left: `${leftPct}%`, right: `${rightPct}%` }}
+                                        />
+                                    </div>
+                                    <input type="range" min={minPrice} max={maxPrice} value={sliderMin} step={1}
+                                        onChange={e => handleSliderMin(e.target.value)}
+                                        className="absolute w-full h-1.5 appearance-none bg-transparent cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-600 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md"
+                                        style={{ zIndex: sliderMin > maxPrice - 100 ? 5 : 3 }}
+                                    />
+                                    <input type="range" min={minPrice} max={maxPrice} value={sliderMax} step={1}
+                                        onChange={e => handleSliderMax(e.target.value)}
+                                        className="absolute w-full h-1.5 appearance-none bg-transparent cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-600 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md"
+                                        style={{ zIndex: 4 }}
+                                    />
+                                </div>
+                                <div className="flex justify-between mt-1">
+                                    <span className="text-xs text-slate-400">${minPrice.toLocaleString()}</span>
+                                    <span className="text-xs text-slate-400">${maxPrice.toLocaleString()}</span>
+                                </div>
+                            </div>
                         </div>
-                        <div className="flex justify-between mt-1">
-                            <span className="text-xs text-slate-400">${minPrice.toLocaleString()}</span>
-                            <span className="text-xs text-slate-400">${maxPrice.toLocaleString()}</span>
+
+                        {/* Results count */}
+                        <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                                Showing <span className="font-semibold text-slate-700 dark:text-slate-300">{filtered.length}</span> of{' '}
+                                <span className="font-semibold text-slate-700 dark:text-slate-300">{cars.length}</span> cars
+                            </p>
                         </div>
                     </div>
-                </div>
-
-                <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                        Showing <span className="font-semibold text-slate-700 dark:text-slate-300">{filtered.length}</span> available cars
-                    </p>
-                </div>
+                )}
             </div>
+
 
             {loading ? (
                 <div className="flex items-center justify-center py-20 gap-3">

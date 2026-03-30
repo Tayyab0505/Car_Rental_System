@@ -112,7 +112,7 @@ export default function AdminBookings() {
     }[s] || 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400')
 
     return (
-        <div className="p-8 min-h-screen">
+        <div className="p-4 md:p-8 min-h-screen">
             <div className="mb-8">
                 <h1 className="text-2xl font-semibold text-slate-800 dark:text-slate-100" style={{ fontFamily: 'Outfit,sans-serif' }}>All bookings</h1>
                 <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Manage and confirm customer bookings</p>
@@ -143,7 +143,7 @@ export default function AdminBookings() {
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
+                    <table className="w-full text-sm min-w-[700px]">
                         <thead>
                             <tr className="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80">
                                 {['Booking ID', 'User ID', 'Car ID', 'Start date', 'End date', 'Total', 'Status', 'Actions'].map(h => (
