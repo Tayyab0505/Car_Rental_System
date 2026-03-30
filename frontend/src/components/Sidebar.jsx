@@ -46,30 +46,54 @@ const userLinks = [
     },
 ]
 
-export default function SideBar() {
+export default function SideBar({ onClose }) {
     const { user, logout } = useAuth();
+    const { dark, toggle } = useTheme();
+
     const navigate = useNavigate();
     const isAdmin = user?.role === 'admin'
     const links = isAdmin ? adminLinks : userLinks
-
-    const { dark, toggle } = useTheme();
 
     const handleLogout = () => {
         logout()
         navigate('/login')
     }
 
+    const handleNavClick = () => {
+        if (onClose) {
+            onClose()
+        }
+    }
+
     return (
         <div className="w-60 min-h-screen bg-[#0f3460] flex flex-col">
             {/* Brand */}
             <div className="flex items-center gap-3 px-6 py-5 border-b border-blue-800/50">
-                <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+
+                <div className="flex items-center gap-3">
+                    <svg width="30" height="30" viewBox="0 0 36 36" fill="none">
+                        <rect width="36" height="36" rx="8" fill="#1d4ed8" />
+                        <path d="M8 22h2.5M25.5 22H28M10 18.5l1.5-4.5h13l1.5 4.5" stroke="white" strokeWidth="1.4" strokeLinecap="round" />
+                        <path d="M8 22v1.5a1 1 0 001 1h1.5a1 1 0 001-1V22M24.5 22v1.5a1 1 0 001 1H27a1 1 0 001-1V22" stroke="white" strokeWidth="1.4" strokeLinecap="round" />
+                        <path d="M8 22h20" stroke="white" strokeWidth="1.4" strokeLinecap="round" />
+                        <circle cx="13" cy="22" r="1.5" fill="#93c5fd" />
+                        <circle cx="23" cy="22" r="1.5" fill="#93c5fd" />
                     </svg>
+                    <div>
+                        <span className="text-blue-300 font-bold text-xs tracking-widest block" style={{ fontFamily: 'Outfit, sans-serif' }}>DriveEase</span>
+                    </div>
                 </div>
-                <span className="text-white font-semibold text-base tracking-wide" style={{ fontFamily: 'Outfit,sans-serif' }}>DriveEase</span>
+                {/* Close button — mobile only */}
+                <button
+                    onClick={onClose}
+                    className="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg bg-blue-800/50 text-blue-200 hover:bg-blue-700/50 cursor-pointer transition-colors"
+                >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path d="M18 6L6 18M6 6l12 12" />
+                    </svg>
+                </button>
             </div>
+
 
             {/* User info */}
             <div className="px-5 py-4 border-b border-blue-800/50">
@@ -94,6 +118,7 @@ export default function SideBar() {
                 {links.map(link => (
                     <NavLink
                         key={link.to} to={link.to}
+                        onClick={handleNavClick}
                         className={({ isActive }) =>
                             `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${isActive
                                 ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20'
