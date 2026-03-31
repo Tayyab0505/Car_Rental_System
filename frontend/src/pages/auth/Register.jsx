@@ -80,8 +80,7 @@ export default function Register() {
                             <circle cx="23" cy="22" r="1.5" fill="#93c5fd" />
                         </svg>
                         <div>
-                            <span className="text-slate-800 dark:text-white font-semibold text-sm" style={{ fontFamily: 'Cormorant Garamond, serif' }}>Signature</span>
-                            <span className="text-blue-600 dark:text-blue-400 font-light text-xs tracking-widest ml-1" style={{ fontFamily: 'Outfit, sans-serif' }}>CARS</span>
+                            <span className="text-slate-800 dark:text-white font-semibold text-sm" style={{ fontFamily: 'Cormorant Garamond, serif' }}>DriveEase</span>
                         </div>
                     </div>
 

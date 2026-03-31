@@ -26,7 +26,15 @@ module.exports = function (sequelize, DataTypes) {
     imageUrl: {
       type: DataTypes.TEXT,
       allowNull: true,
-    }
+    },
+    country: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    city: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
   }, {
     sequelize,
     tableName: 'car',

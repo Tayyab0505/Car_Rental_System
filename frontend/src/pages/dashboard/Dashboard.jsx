@@ -27,11 +27,12 @@ export default function Dashboard() {
             )}
 
             {/* Sidebar */}
-            <div className={`fixed top-0 left-0 h-full z-40 transform transition-transform duration-300 ease-in-out lg:static lg:transform-none lg:z-auto ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+            <aside className={`fixed top-0 left-0 h-full z-40 transform transition-transform duration-300 ease-in-out lg:static lg:h-screen lg:translate-x-0 lg:z-auto lg:flex-shrink-0
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
                 <Sidebar onClose={() => setSidebarOpen(false)} />
-            </div>
+            </aside>
 
-            <div className="flex-1 flex flex-col min-w-0">
+            <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
                 {/* Mobile topbar */}
                 <div className="lg:hidden flex items-center gap-3 px-4 py-3 bg-[#0f3460] border-b border-blue-800/50 sticky top-0 z-20">
                     <button
