@@ -11,6 +11,8 @@ export default function UserCars() {
     // Filters
     const [brandFilter, setBrandFilter] = useState('all')
     const [sortOrder, setSortOrder] = useState('none')
+    const [countryFilter, setCountryFilter] = useState('all')
+    const [cityFilter, setCityFilter] = useState('all')
     const [minPrice, setMinPrice] = useState(0)
     const [maxPrice, setMaxPrice] = useState(0)
     const [sliderMin, setSliderMin] = useState(0)
@@ -34,22 +36,50 @@ export default function UserCars() {
     }, [])
 
     const brands = useMemo(() => ['all', ...new Set(cars.map(c => c.brand))], [cars])
+    const availableCountries = useMemo(() =>
+        ['all', ...new Set(cars.filter(c => c.availability).map(c => c.country).filter(Boolean))],
+        [cars])
+
+    const availableCities = useMemo(() => {
+        const base = cars.filter(c => c.availability)
+        if (countryFilter === 'all') return ['all', ...new Set(base.map(c => c.city).filter(Boolean))]
+        return ['all', ...new Set(base.filter(c => c.country === countryFilter).map(c => c.city).filter(Boolean))]
+    }, [cars, countryFilter])
 
     const filtered = useMemo(() => {
         let list = [...cars].filter(c => c.availability)
-        if (brandFilter !== 'all') list = list.filter(c => c.brand === brandFilter)
+        if (brandFilter !== 'all') {
+            list = list.filter(c => c.brand === brandFilter)
+        }
+        if (countryFilter !== 'all') {
+            list = list.filter(c => c.country === countryFilter)
+        }
+        if (cityFilter !== 'all') {
+            list = list.filter(c => c.city === cityFilter)
+        }
+
         list = list.filter(c => Number(c.pricePerDay) >= sliderMin && Number(c.pricePerDay) <= sliderMax)
         if (sortOrder === 'asc') list.sort((a, b) => Number(a.pricePerDay) - Number(b.pricePerDay))
         if (sortOrder === 'desc') list.sort((a, b) => Number(b.pricePerDay) - Number(a.pricePerDay))
         return list
-    }, [cars, brandFilter, sliderMin, sliderMax, sortOrder])
+    }, [cars, brandFilter, countryFilter, cityFilter, sliderMin, sliderMax, sortOrder])
 
     const handleSliderMin = (val) => setSliderMin(Math.min(Number(val), sliderMax - 1))
     const handleSliderMax = (val) => setSliderMax(Math.max(Number(val), sliderMin + 1))
     const handleInputMin = (val) => setSliderMin(Math.max(minPrice, Math.min(Number(val), sliderMax - 1)))
     const handleInputMax = (val) => setSliderMax(Math.min(maxPrice, Math.max(Number(val), sliderMin + 1)))
-    const resetFilters = () => { setBrandFilter('all'); setSortOrder('none'); setSliderMin(minPrice); setSliderMax(maxPrice) }
 
+    const resetFilters = () => {
+        setBrandFilter('all');
+        setCountryFilter('all');
+        setCityFilter('all')
+        setSortOrder('none');
+        setSliderMin(minPrice);
+        setSliderMax(maxPrice)
+    }
+
+    const isFiltered = brandFilter !== 'all' || countryFilter !== 'all' || cityFilter !== 'all' ||
+        sortOrder !== 'none' || sliderMin !== minPrice || sliderMax !== maxPrice
 
     const handleBook = async () => {
         try {
@@ -127,6 +157,26 @@ export default function UserCars() {
                                     className="w-full text-sm px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500 cursor-pointer"
                                 >
                                     {brands.map(b => <option key={b} value={b}>{b === 'all' ? 'All brands' : b}</option>)}
+                                </select>
+                            </div>
+
+                            {/* Country */}
+                            <div>
+                                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Country</label>
+                                <select value={countryFilter}
+                                    onChange={e => { setCountryFilter(e.target.value); setCityFilter('all') }}
+                                    className="w-full text-sm px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500 cursor-pointer">
+                                    {availableCountries.map(c => <option key={c} value={c}>{c === 'all' ? 'All countries' : c}</option>)}
+                                </select>
+                            </div>
+
+                            {/* City */}
+                            <div>
+                                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">City</label>
+                                <select value={cityFilter} onChange={e => setCityFilter(e.target.value)}
+                                    disabled={availableCities.length <= 1}
+                                    className="w-full text-sm px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500 cursor-pointer disabled:opacity-50">
+                                    {availableCities.map(c => <option key={c} value={c}>{c === 'all' ? 'All cities' : c}</option>)}
                                 </select>
                             </div>
 
@@ -253,6 +303,18 @@ export default function UserCars() {
                                         Available
                                     </span>
                                 </div>
+
+                                {(car.city || car.country) && (
+                                    <div className="flex items-center gap-1 mt-1 mb-2">
+                                        <svg className="w-3 h-3 text-slate-400 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                                        </svg>
+                                        <span className="text-xs text-slate-400 dark:text-slate-500">
+                                            {[car.city, car.country].filter(Boolean).join(', ')}
+                                        </span>
+                                    </div>
+                                )}
+
                                 <button
                                     onClick={() => { setBookingModal(car); setBookingForm({ startDate: '', endDate: '' }) }}
                                     className="w-full mt-4 py-2.5 rounded-lg bg-blue-700 text-white text-sm font-medium hover:bg-blue-800 transition-colors cursor-pointer"
