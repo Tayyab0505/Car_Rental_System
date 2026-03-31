@@ -1,30 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import API from '../../api/axios'
 
-const CarImage = ({ url, alt }) => {
-    const [error, setError] = useState(false)
-
-    if (!url || error) return (
-        <div className="h-44 bg-gradient-to-br from-blue-50 to-slate-100 dark:from-slate-700 dark:to-slate-800 flex flex-col items-center justify-center gap-2">
-            <svg className="w-16 h-16 text-blue-200 dark:text-blue-900" fill="none" stroke="currentColor" strokeWidth={1} viewBox="0 0 24 24">
-                <path d="M5 17H3a2 2 0 01-2-2V9a2 2 0 012-2h1l2-3h10l2 3h1a2 2 0 012 2v6a2 2 0 01-2 2h-2" />
-                <circle cx="7" cy="17" r="2" /><circle cx="17" cy="17" r="2" />
-                <path d="M5 9h14" />
-            </svg>
-            <span className="text-xs text-slate-400 dark:text-slate-500">No image</span>
-        </div>
-    )
-    return (
-        <div className="h-44 overflow-hidden bg-slate-100 dark:bg-slate-700">
-            <img
-                src={url} alt={alt}
-                onError={() => setError(true)}
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-            />
-        </div>
-    )
-}
-
 export default function UserCars() {
     const [cars, setCars] = useState([])
     const [loading, setLoading] = useState(true)

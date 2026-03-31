@@ -1,31 +1,13 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import API from '../../api/axios'
+import locations from '../../data/locations'
 
-const emptyForm = { brand: '', model: '', pricePerDay: '', availability: true, imageUrl: '' }
-
-const CarImage = ({ url, alt }) => {
-    const [error, setError] = useState(false)
-    if (!url || error) return (
-        <div className="h-44 bg-gradient-to-br from-blue-50 to-slate-100 dark:from-slate-700 dark:to-slate-800 flex flex-col items-center justify-center gap-2">
-            <svg className="w-16 h-16 text-blue-200 dark:text-blue-900" fill="none" stroke="currentColor" strokeWidth={1} viewBox="0 0 24 24">
-                <path d="M5 17H3a2 2 0 01-2-2V9a2 2 0 012-2h1l2-3h10l2 3h1a2 2 0 012 2v6a2 2 0 01-2 2h-2" />
-                <circle cx="7" cy="17" r="2" /><circle cx="17" cy="17" r="2" />
-                <path d="M5 9h14" />
-            </svg>
-            <span className="text-xs text-slate-400 dark:text-slate-500">No image</span>
-        </div>
-    )
-
-    return (
-        <div className="h-44 overflow-hidden bg-slate-100 dark:bg-slate-700">
-            <img
-                src={url} alt={alt}
-                onError={() => setError(true)}
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-            />
-        </div>
-    )
+const emptyForm = {
+    brand: '', model: '', pricePerDay: '', availability: true,
+    imageUrl: '', country: '', city: ''
 }
+
+const countries = Object.keys(locations)
 
 export default function AdminCars() {
     const [cars, setCars] = useState([])
@@ -35,15 +17,17 @@ export default function AdminCars() {
     const [editId, setEditId] = useState(null)
     const [deleteModal, setDeleteModal] = useState(null)
     const [msg, setMsg] = useState('')
+    const [filtersOpen, setFiltersOpen] = useState(false)
 
     // Filters
     const [brandFilter, setBrandFilter] = useState('all')
+    const [countryFilter, setCountryFilter] = useState('all')
+    const [cityFilter, setCityFilter] = useState('all')
     const [sortOrder, setSortOrder] = useState('none')
     const [minPrice, setMinPrice] = useState(0)
     const [maxPrice, setMaxPrice] = useState(0)
     const [sliderMin, setSliderMin] = useState(0)
     const [sliderMax, setSliderMax] = useState(0)
-    const [filtersOpen, setFiltersOpen] = useState(false)
 
 
     useEffect(() => {
@@ -69,60 +53,47 @@ export default function AdminCars() {
         fetchCars()
     }, [])
 
-    const brands = useMemo(() => ['all', ...new Set(cars.map(c => c.brand))], [cars])
+    const brands = useMemo(() => ['all', ...new Set(cars.map(c => c.brand).filter(Boolean))], [cars])
+    const availableCountries = useMemo(() => ['all', ...new Set(cars.map(c => c.country).filter(Boolean))], [cars])
+    const availableCities = useMemo(() => {
+        if (countryFilter === 'all') return ['all', ...new Set(cars.map(c => c.city).filter(Boolean))]
+        return ['all', ...new Set(cars.filter(c => c.country === countryFilter).map(c => c.city).filter(Boolean))]
+    }, [cars, countryFilter])
 
     const filtered = useMemo(() => {
         let list = [...cars]
-        if (brandFilter !== 'all') {
-            list = list.filter(c => c.brand === brandFilter)
-        }
+        if (brandFilter !== 'all') list = list.filter(c => c.brand === brandFilter)
+        if (countryFilter !== 'all') list = list.filter(c => c.country === countryFilter)
+        if (cityFilter !== 'all') list = list.filter(c => c.city === cityFilter)
         list = list.filter(c => Number(c.pricePerDay) >= sliderMin && Number(c.pricePerDay) <= sliderMax)
-
-        if (sortOrder === 'asc') {
-            list.sort((a, b) => Number(a.pricePerDay) - Number(b.pricePerDay))
-        }
-
-        if (sortOrder === 'desc') {
-            list.sort((a, b) => Number(b.pricePerDay) - Number(a.pricePerDay))
-        }
-
+        if (sortOrder === 'asc') list.sort((a, b) => Number(a.pricePerDay) - Number(b.pricePerDay))
+        if (sortOrder === 'desc') list.sort((a, b) => Number(b.pricePerDay) - Number(a.pricePerDay))
         return list
-    }, [cars, brandFilter, sliderMin, sliderMax, sortOrder]);
+    }, [cars, brandFilter, countryFilter, cityFilter, sliderMin, sliderMax, sortOrder])
 
-    const handleSliderMin = (val) => {
-        const v = Math.min(Number(val), sliderMax - 1)
-        setSliderMin(v)
-    }
-    const handleSliderMax = (val) => {
-        const v = Math.max(Number(val), sliderMin + 1)
-        setSliderMax(v)
-    }
-
-    const handleInputMin = (val) => {
-        const v = Math.max(minPrice, Math.min(Number(val), sliderMax - 1))
-        setSliderMin(v)
-    }
-    const handleInputMax = (val) => {
-        const v = Math.min(maxPrice, Math.max(Number(val), sliderMin + 1))
-        setSliderMax(v)
-    }
+    const handleSliderMin = (val) => setSliderMin(Math.min(Number(val), sliderMax - 1))
+    const handleSliderMax = (val) => setSliderMax(Math.max(Number(val), sliderMin + 1))
+    const handleInputMin = (val) => setSliderMin(Math.max(minPrice, Math.min(Number(val), sliderMax - 1)))
+    const handleInputMax = (val) => setSliderMax(Math.min(maxPrice, Math.max(Number(val), sliderMin + 1)))
 
     const resetFilters = () => {
-        setBrandFilter('all')
-        setSortOrder('none')
-        setSliderMin(minPrice)
-        setSliderMax(maxPrice)
+        setBrandFilter('all'); setCountryFilter('all'); setCityFilter('all')
+        setSortOrder('none'); setSliderMin(minPrice); setSliderMax(maxPrice)
     }
 
+    const isFiltered = brandFilter !== 'all' || countryFilter !== 'all' || cityFilter !== 'all' ||
+        sortOrder !== 'none' || sliderMin !== minPrice || sliderMax !== maxPrice
 
     const openAdd = () => { setForm(emptyForm); setEditId(null); setShowModal(true) }
     const openEdit = (car) => {
         setForm({
-            brand: car.brand,
-            model: car.model,
-            pricePerDay: car.pricePerDay,
+            brand: car.brand || '',
+            model: car.model || '',
+            pricePerDay: car.pricePerDay || '',
             availability: car.availability,
-            imageUrl: car.imageUrl || ''
+            imageUrl: car.imageUrl || '',
+            country: car.country || '',
+            city: car.city || '',
         })
         setEditId(car.id)
         setShowModal(true)
@@ -162,9 +133,13 @@ export default function AdminCars() {
     const leftPct = ((sliderMin - minPrice) / range) * 100
     const rightPct = 100 - ((sliderMax - minPrice) / range) * 100
 
+    const selectClass = "w-full text-sm px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500 cursor-pointer"
+    const inputClass = "w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
+    const labelClass = "block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5"
+
     return (
         <div className="p-4 md:p-8 min-h-screen">
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between mb-6">
                 <div>
                     <h1 className="text-2xl font-semibold text-slate-800 dark:text-slate-100" style={{ fontFamily: 'Outfit,sans-serif' }}>Cars management</h1>
                     <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Add, edit or remove cars from the fleet</p>
@@ -173,7 +148,8 @@ export default function AdminCars() {
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                         <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
                     </svg>
-                    Add car
+                    <span className="hidden sm:inline">Add car</span>
+                    <span className="sm:hidden">Add</span>
                 </button>
             </div>
 
@@ -181,62 +157,55 @@ export default function AdminCars() {
 
             {/* FILTER BAR */}
             <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm mb-6">
-
-                <div className="flex items-center justify-between p-4 cursor-pointer" onClick={() => setFiltersOpen(prev => !prev)}>
-
+                <div className="flex items-center justify-between p-4 cursor-pointer" onClick={() => setFiltersOpen(p => !p)}>
                     <div className="flex items-center gap-2">
                         <svg className="w-4 h-4 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                             <path d="M3 6h18M6 12h12M10 18h4" />
                         </svg>
-                        <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300" style={{ fontFamily: 'Outfit,sans-serif' }}>
-                            Filters
-                        </h2>
-                        {(brandFilter !== 'all' || sortOrder !== 'none' || sliderMin !== minPrice || sliderMax !== maxPrice) && (
-                            <span className="w-2 h-2 rounded-full bg-blue-500" />
-                        )}
+                        <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300" style={{ fontFamily: 'Outfit,sans-serif' }}>Filters</h2>
+                        {isFiltered && <span className="w-2 h-2 rounded-full bg-blue-500" />}
                     </div>
-
                     <div className="flex items-center gap-3">
-                        <button
-                            onClick={e => { e.stopPropagation(); resetFilters() }}
-                            className="text-xs text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
-                        >
-                            Reset all
-                        </button>
-                        <svg
-                            className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${filtersOpen ? 'rotate-180' : ''}`}
-                            fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"
-                        >
+                        <button onClick={e => { e.stopPropagation(); resetFilters() }} className="text-xs text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">Reset all</button>
+                        <svg className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${filtersOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                             <path d="M19 9l-7 7-7-7" />
                         </svg>
                     </div>
                 </div>
 
-
                 {filtersOpen && (
                     <div className="px-4 pb-5 border-t border-slate-100 dark:border-slate-700">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 pt-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
 
                             {/* Brand */}
                             <div>
-                                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Brand</label>
-                                <select
-                                    value={brandFilter}
-                                    onChange={e => setBrandFilter(e.target.value)}
-                                    className="w-full text-sm px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500 cursor-pointer"
-                                >
+                                <label className={labelClass}>Brand</label>
+                                <select value={brandFilter} onChange={e => setBrandFilter(e.target.value)} className={selectClass}>
                                     {brands.map(b => <option key={b} value={b}>{b === 'all' ? 'All brands' : b}</option>)}
+                                </select>
+                            </div>
+
+                            {/* Country */}
+                            <div>
+                                <label className={labelClass}>Country</label>
+                                <select value={countryFilter} onChange={e => { setCountryFilter(e.target.value); setCityFilter('all') }} className={selectClass}>
+                                    {availableCountries.map(c => <option key={c} value={c}>{c === 'all' ? 'All countries' : c}</option>)}
+                                </select>
+                            </div>
+
+                            {/* City */}
+                            <div>
+                                <label className={labelClass}>City</label>
+                                <select value={cityFilter} onChange={e => setCityFilter(e.target.value)} className={selectClass}
+                                    disabled={availableCities.length <= 1}>
+                                    {availableCities.map(c => <option key={c} value={c}>{c === 'all' ? 'All cities' : c}</option>)}
                                 </select>
                             </div>
 
                             {/* Sort */}
                             <div>
-                                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Sort by price</label>
-                                <select
-                                    value={sortOrder}
-                                    onChange={e => setSortOrder(e.target.value)}
-                                    className="w-full text-sm px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500 cursor-pointer"
-                                >
+                                <label className={labelClass}>Sort by price</label>
+                                <select value={sortOrder} onChange={e => setSortOrder(e.target.value)} className={selectClass}>
                                     <option value="none">Default</option>
                                     <option value="asc">Low to high</option>
                                     <option value="desc">High to low</option>
@@ -244,49 +213,32 @@ export default function AdminCars() {
                             </div>
 
                             {/* Price range */}
-                            <div className="sm:col-span-2 lg:col-span-1">
-                                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
+                            <div className="sm:col-span-2">
+                                <label className={labelClass}>
                                     Price range —{' '}
                                     <span className="text-blue-600 dark:text-blue-400 font-semibold">
                                         ${sliderMin.toLocaleString()} – ${sliderMax.toLocaleString()}
                                     </span>
                                 </label>
-
-                                {/* Min/Max inputs */}
                                 <div className="flex items-center gap-2 mb-3">
-                                    <input
-                                        type="number" value={sliderMin}
-                                        onChange={e => handleInputMin(e.target.value)}
-                                        className="w-full text-xs px-2.5 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500"
-                                        placeholder="Min"
-                                    />
+                                    <input type="number" value={sliderMin} onChange={e => handleInputMin(e.target.value)}
+                                        className="w-full text-xs px-2.5 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500" placeholder="Min" />
                                     <span className="text-slate-400 text-xs flex-shrink-0">—</span>
-                                    <input
-                                        type="number" value={sliderMax}
-                                        onChange={e => handleInputMax(e.target.value)}
-                                        className="w-full text-xs px-2.5 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500"
-                                        placeholder="Max"
-                                    />
+                                    <input type="number" value={sliderMax} onChange={e => handleInputMax(e.target.value)}
+                                        className="w-full text-xs px-2.5 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500" placeholder="Max" />
                                 </div>
-
-                                {/* Dual slider */}
                                 <div className="relative h-5 flex items-center">
                                     <div className="absolute w-full h-1.5 bg-slate-200 dark:bg-slate-600 rounded-full">
-                                        <div
-                                            className="absolute h-1.5 bg-blue-500 rounded-full"
-                                            style={{ left: `${leftPct}%`, right: `${rightPct}%` }}
-                                        />
+                                        <div className="absolute h-1.5 bg-blue-500 rounded-full" style={{ left: `${leftPct}%`, right: `${rightPct}%` }} />
                                     </div>
                                     <input type="range" min={minPrice} max={maxPrice} value={sliderMin} step={1}
                                         onChange={e => handleSliderMin(e.target.value)}
                                         className="absolute w-full h-1.5 appearance-none bg-transparent cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-600 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md"
-                                        style={{ zIndex: sliderMin > maxPrice - 100 ? 5 : 3 }}
-                                    />
+                                        style={{ zIndex: sliderMin > maxPrice - 100 ? 5 : 3 }} />
                                     <input type="range" min={minPrice} max={maxPrice} value={sliderMax} step={1}
                                         onChange={e => handleSliderMax(e.target.value)}
                                         className="absolute w-full h-1.5 appearance-none bg-transparent cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-600 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md"
-                                        style={{ zIndex: 4 }}
-                                    />
+                                        style={{ zIndex: 4 }} />
                                 </div>
                                 <div className="flex justify-between mt-1">
                                     <span className="text-xs text-slate-400">${minPrice.toLocaleString()}</span>
@@ -295,7 +247,6 @@ export default function AdminCars() {
                             </div>
                         </div>
 
-                        {/* Results count */}
                         <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
                             <p className="text-xs text-slate-500 dark:text-slate-400">
                                 Showing <span className="font-semibold text-slate-700 dark:text-slate-300">{filtered.length}</span> of{' '}
@@ -329,7 +280,7 @@ export default function AdminCars() {
                             {car.imageUrl ? (
                                 <div className="h-44 overflow-hidden bg-slate-100 dark:bg-slate-700">
                                     <img src={car.imageUrl} alt={`${car.brand} ${car.model}`}
-                                        onError={e => { e.target.parentElement.innerHTML = '<div class="h-44 flex items-center justify-center text-slate-300 dark:text-slate-600"><svg class="w-16 h-16" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path d="M5 17H3a2 2 0 01-2-2V9a2 2 0 012-2h1l2-3h10l2 3h1a2 2 0 012 2v6a2 2 0 01-2 2h-2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg></div>' }}
+                                        onError={e => e.target.parentElement.style.display = 'none'}
                                         className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                                     />
                                 </div>
@@ -341,17 +292,30 @@ export default function AdminCars() {
                                 </div>
                             )}
                             <div className="p-5">
-                                <div className="flex items-start justify-between mb-3">
+                                <div className="flex items-start justify-between mb-2">
                                     <div>
                                         <h3 className="font-semibold text-slate-800 dark:text-slate-100" style={{ fontFamily: 'Outfit,sans-serif' }}>{car.brand} {car.model}</h3>
                                         <p className="text-blue-700 dark:text-blue-400 font-semibold text-xl mt-0.5" style={{ fontFamily: 'Outfit,sans-serif' }}>
                                             ${Number(car.pricePerDay).toLocaleString()}<span className="text-slate-400 text-xs font-normal">/day</span>
                                         </p>
                                     </div>
-                                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${car.availability ? 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400' : 'bg-red-50 dark:bg-red-900/40 text-red-600 dark:text-red-400'}`}>
+                                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium flex-shrink-0 ${car.availability ? 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400' : 'bg-red-50 dark:bg-red-900/40 text-red-600 dark:text-red-400'}`}>
                                         {car.availability ? 'Available' : 'Unavailable'}
                                     </span>
                                 </div>
+
+                                {/* Location badge */}
+                                {(car.city || car.country) && (
+                                    <div className="flex items-center gap-1 mt-1 mb-3">
+                                        <svg className="w-3 h-3 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                                        </svg>
+                                        <span className="text-xs text-slate-400 dark:text-slate-500">
+                                            {[car.city, car.country].filter(Boolean).join(', ')}
+                                        </span>
+                                    </div>
+                                )}
+
                                 <div className="flex gap-2">
                                     <button onClick={() => openEdit(car)} className="flex-1 py-2 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer">Edit</button>
                                     <button onClick={() => setDeleteModal(car.id)} className="flex-1 py-2 rounded-lg border border-red-100 dark:border-red-900/50 text-red-500 dark:text-red-400 text-sm hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer">Delete</button>
@@ -365,52 +329,99 @@ export default function AdminCars() {
             {/* Add/Edit Modal */}
             {showModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl border border-slate-100 dark:border-slate-700">
-                        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-5" style={{ fontFamily: 'Outfit,sans-serif' }}>{editId ? 'Edit car' : 'Add new car'}</h3>
-                        {form.imageUrl && (
-                            <div className="mb-4 rounded-xl overflow-hidden h-36 bg-slate-100 dark:bg-slate-700">
-                                <img src={form.imageUrl} alt="preview" onError={e => e.target.style.display = 'none'} className="w-full h-full object-cover" />
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl border border-slate-100 dark:border-slate-700 max-h-[90vh] overflow-y-auto">
+                        <div className="p-6">
+                            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-5" style={{ fontFamily: 'Outfit,sans-serif' }}>
+                                {editId ? 'Edit car' : 'Add new car'}
+                            </h3>
+
+                            {form.imageUrl && (
+                                <div className="mb-4 rounded-xl overflow-hidden h-36 bg-slate-100 dark:bg-slate-700">
+                                    <img src={form.imageUrl} alt="preview" onError={e => e.target.style.display = 'none'} className="w-full h-full object-cover" />
+                                </div>
+                            )}
+
+                            {/* Basic fields */}
+                            {[
+                                ['Brand', 'brand', 'text', 'e.g. Toyota'],
+                                ['Model', 'model', 'text', 'e.g. Corolla'],
+                                ['Price per day ($)', 'pricePerDay', 'number', 'e.g. 50'],
+                                ['Image URL', 'imageUrl', 'text', 'https://...'],
+                            ].map(([label, key, type, ph]) => (
+                                <div key={key} className="mb-4">
+                                    <label className={labelClass}>{label}</label>
+                                    <input type={type} placeholder={ph} value={form[key]}
+                                        onChange={e => setForm({ ...form, [key]: e.target.value })}
+                                        className={inputClass}
+                                    />
+                                </div>
+                            ))}
+
+                            {/* Country dropdown */}
+                            <div className="mb-4">
+                                <label className={labelClass}>Country</label>
+                                <select
+                                    value={form.country}
+                                    onChange={e => setForm({ ...form, country: e.target.value, city: '' })}
+                                    className={selectClass}
+                                >
+                                    <option value="">Select country</option>
+                                    {countries.map(c => <option key={c} value={c}>{c}</option>)}
+                                </select>
                             </div>
-                        )}
-                        {[['Brand', 'brand', 'text', 'e.g. Toyota'], ['Model', 'model', 'text', 'e.g. Corolla'], ['Price per day ($)', 'pricePerDay', 'number', 'e.g. 50'], ['Image URL', 'imageUrl', 'text', 'https://...']].map(([label, key, type, ph]) => (
-                            <div key={key} className="mb-4">
-                                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{label}</label>
-                                <input type={type} placeholder={ph} value={form[key]}
-                                    onChange={e => setForm({ ...form, [key]: e.target.value })}
-                                    className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
+
+                            {/* City dropdown — updates based on country */}
+                            <div className="mb-4">
+                                <label className={labelClass}>City</label>
+                                <select
+                                    value={form.city}
+                                    onChange={e => setForm({ ...form, city: e.target.value })}
+                                    disabled={!form.country}
+                                    className={`${selectClass} disabled:opacity-50 disabled:cursor-not-allowed`}
+                                >
+                                    <option value="">{form.country ? 'Select city' : 'Select country first'}</option>
+                                    {form.country && locations[form.country]?.map(city => (
+                                        <option key={city} value={city}>{city}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Availability */}
+                            <div className="mb-6 flex items-center gap-3">
+                                <input type="checkbox" id="avail" checked={form.availability}
+                                    onChange={e => setForm({ ...form, availability: e.target.checked })}
+                                    className="w-4 h-4 accent-blue-600"
                                 />
+                                <label htmlFor="avail" className="text-sm text-slate-600 dark:text-slate-300 cursor-pointer">Available for booking</label>
                             </div>
-                        ))}
-                        <div className="mb-6 flex items-center gap-3">
-                            <input type="checkbox" id="avail" checked={form.availability} onChange={e => setForm({ ...form, availability: e.target.checked })} className="w-4 h-4 accent-blue-600" />
-                            <label htmlFor="avail" className="text-sm text-slate-600 dark:text-slate-300 cursor-pointer">Available for booking</label>
-                        </div>
-                        <div className="flex gap-3">
-                            <button onClick={() => setShowModal(false)} className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer">Cancel</button>
-                            <button onClick={handleSave} className="flex-1 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium cursor-pointer">{editId ? 'Save changes' : 'Add car'}</button>
+
+                            <div className="flex gap-3">
+                                <button onClick={() => setShowModal(false)} className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer transition-colors">Cancel</button>
+                                <button onClick={handleSave} className="flex-1 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium cursor-pointer transition-colors">{editId ? 'Save changes' : 'Add car'}</button>
+                            </div>
                         </div>
                     </div>
                 </div>
             )}
 
-            {
-                deleteModal && (
-                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                        <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl border border-slate-100 dark:border-slate-700">
-                            <div className="w-12 h-12 bg-red-50 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                            </div>
-                            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 text-center mb-1" style={{ fontFamily: 'Outfit,sans-serif' }}>Delete this car?</h3>
-                            <p className="text-sm text-slate-500 dark:text-slate-400 text-center mb-6">This action cannot be undone.</p>
-                            <div className="flex gap-3">
-                                <button onClick={() => setDeleteModal(null)} className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer transition-colors">Cancel</button>
-                                <button onClick={handleDelete} className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-medium cursor-pointer transition-colors">Yes, delete it</button>
-                            </div>
+            {/* Delete Modal */}
+            {deleteModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl border border-slate-100 dark:border-slate-700">
+                        <div className="w-12 h-12 bg-red-50 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </div>
+                        <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 text-center mb-1" style={{ fontFamily: 'Outfit,sans-serif' }}>Delete this car?</h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 text-center mb-6">This action cannot be undone.</p>
+                        <div className="flex gap-3">
+                            <button onClick={() => setDeleteModal(null)} className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer">Cancel</button>
+                            <button onClick={handleDelete} className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-medium cursor-pointer">Yes, delete it</button>
                         </div>
                     </div>
-                )}
-        </div >
+                </div>
+            )}
+        </div>
     )
 }
