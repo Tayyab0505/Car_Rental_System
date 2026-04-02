@@ -111,10 +111,8 @@ export default function UserCars() {
             <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm mb-6">
 
                 {/* Filter header — always visible */}
-                <div
-                    className="flex items-center justify-between p-4 cursor-pointer"
-                    onClick={() => setFiltersOpen(prev => !prev)}
-                >
+                <div className="flex items-center justify-between p-4 cursor-pointer"
+                    onClick={() => setFiltersOpen(prev => !prev)} >   
                     <div className="flex items-center gap-2">
                         <svg className="w-4 h-4 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                             <path d="M3 6h18M6 12h12M10 18h4" />
