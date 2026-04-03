@@ -4,10 +4,63 @@ import locations from '../../data/locations'
 
 const emptyForm = {
     brand: '', model: '', pricePerDay: '', availability: true,
-    imageUrl: '', country: '', city: ''
+    imageUrl: '', country: '', city: '', imageUrl2: '', imageUrl3: '', year: '', transmission: '', fuelType: '', mileage: ''
 }
 
 const countries = Object.keys(locations)
+
+const CarSlider = ({ car }) => {
+    const images = [car.imageUrl, car.imageUrl2, car.imageUrl3].filter(Boolean)
+    const [current, setCurrent] = useState(0)
+    const [errored, setErrored] = useState({})
+    const validImages = images.filter((_, i) => !errored[i])
+
+    if (validImages.length === 0) return (
+        <div className="h-48 bg-gradient-to-br from-blue-50 to-slate-100 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
+            <svg className="w-16 h-16 text-blue-200 dark:text-blue-900" fill="none" stroke="currentColor" strokeWidth={1} viewBox="0 0 24 24">
+                <path d="M5 17H3a2 2 0 01-2-2V9a2 2 0 012-2h1l2-3h10l2 3h1a2 2 0 012 2v6a2 2 0 01-2 2h-2" />
+                <circle cx="7" cy="17" r="2" /><circle cx="17" cy="17" r="2" /><path d="M5 9h14" />
+            </svg>
+        </div>
+    )
+
+    const prev = (e) => { e.stopPropagation(); setCurrent(c => (c - 1 + validImages.length) % validImages.length) }
+    const next = (e) => { e.stopPropagation(); setCurrent(c => (c + 1) % validImages.length) }
+    const idx = current % validImages.length
+
+    return (
+        <div className="relative h-48 overflow-hidden bg-slate-100 dark:bg-slate-700 group">
+            <img src={validImages[idx]} alt={`${car.brand} ${car.model}`}
+                onError={() => setErrored(p => ({ ...p, [images.indexOf(validImages[idx])]: true }))}
+                className="w-full h-full object-cover transition-all duration-500"
+            />
+            {validImages.length > 1 && (
+                <>
+                    <button onClick={prev} className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/40 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:bg-black/60">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /></svg>
+                    </button>
+                    <button onClick={next} className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/40 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:bg-black/60">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" /></svg>
+                    </button>
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                        {validImages.map((_, i) => (
+                            <button key={i} onClick={e => { e.stopPropagation(); setCurrent(i) }}
+                                className={`h-1.5 rounded-full transition-all cursor-pointer ${i === idx ? 'bg-white w-3' : 'bg-white/50 w-1.5'}`}
+                            />
+                        ))}
+                    </div>
+                </>
+            )}
+        </div>
+    )
+}
+
+const DetailBadge = ({ icon, label }) => (
+    <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-700/50 rounded-lg px-2.5 py-1.5">
+        <span className="text-slate-400 dark:text-slate-500">{icon}</span>
+        <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">{label}</span>
+    </div>
+)
 
 export default function AdminCars() {
     const [cars, setCars] = useState([])
@@ -92,8 +145,14 @@ export default function AdminCars() {
             pricePerDay: car.pricePerDay || '',
             availability: car.availability,
             imageUrl: car.imageUrl || '',
+            imageUrl2: car.imageUrl2 || '',
+            imageUrl3: car.imageUrl3 || '',
             country: car.country || '',
             city: car.city || '',
+            year: car.year || '',
+            transmission: car.transmission || '',
+            fuelType: car.fuelType || '',
+            mileage: car.mileage || ''
         })
         setEditId(car.id)
         setShowModal(true)
@@ -277,20 +336,7 @@ export default function AdminCars() {
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                     {filtered.map(car => (
                         <div key={car.id} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                            {car.imageUrl ? (
-                                <div className="h-44 overflow-hidden bg-slate-100 dark:bg-slate-700">
-                                    <img src={car.imageUrl} alt={`${car.brand} ${car.model}`}
-                                        onError={e => e.target.parentElement.style.display = 'none'}
-                                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                                    />
-                                </div>
-                            ) : (
-                                <div className="h-44 bg-gradient-to-br from-blue-50 to-slate-100 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
-                                    <svg className="w-16 h-16 text-blue-200 dark:text-blue-900" fill="none" stroke="currentColor" strokeWidth={1} viewBox="0 0 24 24">
-                                        <path d="M5 17H3a2 2 0 01-2-2V9a2 2 0 012-2h1l2-3h10l2 3h1a2 2 0 012 2v6a2 2 0 01-2 2h-2" /><circle cx="7" cy="17" r="2" /><circle cx="17" cy="17" r="2" /><path d="M5 9h14" />
-                                    </svg>
-                                </div>
-                            )}
+                            <CarSlider car={car} />
                             <div className="p-5">
                                 <div className="flex items-start justify-between mb-2">
                                     <div>
@@ -306,13 +352,29 @@ export default function AdminCars() {
 
                                 {/* Location badge */}
                                 {(car.city || car.country) && (
-                                    <div className="flex items-center gap-1 mt-1 mb-3">
-                                        <svg className="w-3 h-3 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                    <div className="flex items-center gap-1 mt-1 mb-2">
+                                        <svg className="w-3 h-3 text-slate-400 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                                             <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
                                         </svg>
-                                        <span className="text-xs text-slate-400 dark:text-slate-500">
-                                            {[car.city, car.country].filter(Boolean).join(', ')}
-                                        </span>
+                                        <span className="text-xs text-slate-400 dark:text-slate-500">{[car.city, car.country].filter(Boolean).join(', ')}</span>
+                                    </div>
+                                )}
+
+                                {/* Detail badges */}
+                                {(car.year || car.transmission || car.fuelType || car.mileage) && (
+                                    <div className="grid grid-cols-2 gap-1.5 mb-3">
+                                        {car.year && <DetailBadge icon={
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>
+                                        } label={car.year} />}
+                                        {car.transmission && <DetailBadge icon={
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><circle cx="5" cy="12" r="2" /><circle cx="19" cy="5" r="2" /><circle cx="19" cy="19" r="2" /><path d="M5 14v4a2 2 0 002 2h10M5 10V6a2 2 0 012-2h10M19 7v10" /></svg>
+                                        } label={car.transmission} />}
+                                        {car.fuelType && <DetailBadge icon={
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M3 22V8l6-6h6l2 2v2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2v6" /><path d="M9 2v6H3" /></svg>
+                                        } label={car.fuelType} />}
+                                        {car.mileage && <DetailBadge icon={
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2z" /><path d="M12 6v6l4 2" /></svg>
+                                        } label={car.mileage} />}
                                     </div>
                                 )}
 
@@ -335,18 +397,28 @@ export default function AdminCars() {
                                 {editId ? 'Edit car' : 'Add new car'}
                             </h3>
 
-                            {form.imageUrl && (
-                                <div className="mb-4 rounded-xl overflow-hidden h-36 bg-slate-100 dark:bg-slate-700">
-                                    <img src={form.imageUrl} alt="preview" onError={e => e.target.style.display = 'none'} className="w-full h-full object-cover" />
-                                </div>
-                            )}
+                            <div className="grid grid-cols-3 gap-2 mb-4">
+                                {[form.imageUrl, form.imageUrl2, form.imageUrl3].map((url, i) => (
+                                    <div key={i} className="h-20 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                                        {url ? (
+                                            <img src={url} alt={`img${i + 1}`} onError={e => e.target.style.display = 'none'} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <span className="text-xs text-slate-400">Photo {i + 1}</span>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
 
                             {/* Basic fields */}
                             {[
                                 ['Brand', 'brand', 'text', 'e.g. Toyota'],
                                 ['Model', 'model', 'text', 'e.g. Corolla'],
                                 ['Price per day ($)', 'pricePerDay', 'number', 'e.g. 50'],
-                                ['Image URL', 'imageUrl', 'text', 'https://...'],
+                                ['Image URL 1 (main)', 'imageUrl', 'text', 'https://...'],
+                                ['Image URL 2', 'imageUrl2', 'text', 'https://...'],
+                                ['Image URL 3', 'imageUrl3', 'text', 'https://...'],
+                                ['Year', 'year', 'number', 'e.g. 2023'],
+                                ['Mileage', 'mileage', 'text', 'e.g. 15,000 km'],
                             ].map(([label, key, type, ph]) => (
                                 <div key={key} className="mb-4">
                                     <label className={labelClass}>{label}</label>
@@ -356,6 +428,27 @@ export default function AdminCars() {
                                     />
                                 </div>
                             ))}
+
+                            <div className="mb-4">
+                                <label className={labelClass}>Transmission</label>
+                                <select value={form.transmission} onChange={e => setForm({ ...form, transmission: e.target.value })} className={selectClass}>
+                                    <option value="">Select transmission</option>
+                                    <option value="Automatic">Automatic</option>
+                                    <option value="Manual">Manual</option>
+                                </select>
+                            </div>
+
+                            <div className="mb-4">
+                                <label className={labelClass}>Fuel type</label>
+                                <select value={form.fuelType} onChange={e => setForm({ ...form, fuelType: e.target.value })} className={selectClass}>
+                                    <option value="">Select fuel type</option>
+                                    <option value="Petrol">Petrol</option>
+                                    <option value="Diesel">Diesel</option>
+                                    <option value="Electric">Electric</option>
+                                    <option value="Hybrid">Hybrid</option>
+                                    <option value="CNG">CNG</option>
+                                </select>
+                            </div>
 
                             {/* Country dropdown */}
                             <div className="mb-4">
