@@ -1,5 +1,65 @@
 import { useEffect, useMemo, useState } from 'react'
 import API from '../../api/axios'
+import locations from '../../data/locations'
+
+const countries = Object.keys(locations)
+
+const carSlider = ({ car }) => {
+    const images = [car.imageUrl, car.imageUrl2, car.imageUrl3].filter(Boolean)
+    const [current, setCurrent] = useState(0)
+    const [errored, setErrored] = useState({})
+
+    const validImages = images.filter((_, i) => !errored[i])
+
+    if (validImages.length === 0) {
+        return (
+            <div className="h-48 bg-gradient-to-br from-blue-50 to-slate-100 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
+                <svg className="w-16 h-16 text-blue-200 dark:text-blue-900" fill="none" stroke="currentColor" strokeWidth={1} viewBox="0 0 24 24">
+                    <path d="M5 17H3a2 2 0 01-2-2V9a2 2 0 012-2h1l2-3h10l2 3h1a2 2 0 012 2v6a2 2 0 01-2 2h-2" />
+                    <circle cx="7" cy="17" r="2" /><circle cx="17" cy="17" r="2" /><path d="M5 9h14" />
+                </svg>
+            </div>
+        )
+    }
+
+    const prev = (e) => {
+        e.stopPropagation();
+        setCurrent(c => (c - 1 + validImages.length) % validImages.length)
+    }
+    const next = (e) => {
+        e.stopPropagation();
+        setCurrent(c => (c + 1) % validImages.length)
+    }
+    const idx = current % validImages.length
+
+    return (
+        <div className="relative h-48 overflow-hidden bg-slate-100 dark:bg-slate-700 group">
+            <img src={validImages[idx]} alt={`${car.brand} ${car.model}`}
+                onError={() => setErrored(p => ({ ...p, [images.indexOf(validImages[idx])]: true }))}
+                className="w-full h-full object-cover transition-all duration-500" />
+            {validImages.length > 1 && (
+                <>
+                    <button onClick={prev} className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/40 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:bg-black/60">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /></svg>
+                    </button>
+
+                    <button onClick={next} className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/40 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:bg-black/60">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" /></svg>
+                    </button>
+
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                        {validImages.map((_, i) => (
+                            <button key={i} onClick={e => { e.stopPropagation(); setCurrent(i) }}
+                                className={`w-1.5 h-1.5 rounded-full transition-all cursor-pointer ${i === idx ? 'bg-white w-3' : 'bg-white/50'}`}
+                            />
+                        ))}
+                    </div>
+                </>
+            )}
+        </div>
+    )
+}
+
 
 export default function UserCars() {
     const [cars, setCars] = useState([])

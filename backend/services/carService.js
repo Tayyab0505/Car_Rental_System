@@ -2,23 +2,23 @@ const { models } = require('../config/db');
 const Car = models.car;
 
 const addCar = async (data) => {
-    const { model, brand, pricePerDay, availability, imageUrl, country, city } = data;
+    const { model, brand, pricePerDay, availability, imageUrl, country, city, imageUrl2, imageUrl3, year, transmission, fuelType, mileage } = data;
 
     if (!model || !brand || !pricePerDay || availability === "") {
         throw new Error("Please fill all required fields");
     };
-    return await Car.create({ model, brand, pricePerDay, availability, imageUrl, country, city });
+    return await Car.create({ model, brand, pricePerDay, availability, imageUrl, country, city, imageUrl2, imageUrl3, year, transmission, fuelType, mileage });
 };
 
 const updateCar = async (id, data) => {
-    const { model, brand, pricePerDay, availability, imageUrl, country, city } = data;
+    const { model, brand, pricePerDay, availability, imageUrl, country, city, imageUrl2, imageUrl3, year, transmission, fuelType, mileage } = data;
 
     if (!model || !brand || !pricePerDay || availability === "") {
         throw new Error("Please fill all required fields");
     };
 
     const [updated] = await Car.update(
-        { model, brand, pricePerDay, availability, imageUrl, country, city },
+        { model, brand, pricePerDay, availability, imageUrl, country, city, imageUrl2, imageUrl3, year, transmission, fuelType, mileage },
         { where: { id } }
     );
 
