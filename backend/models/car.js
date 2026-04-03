@@ -35,6 +35,30 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    imageUrl2: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    imageUrl3: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    year: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
+    transmission: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    fuelType: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    mileage: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
   }, {
     sequelize,
     tableName: 'car',

@@ -277,8 +277,7 @@ export default function UserCars() {
                                 <div className="h-44 overflow-hidden bg-slate-100 dark:bg-slate-700">
                                     <img src={car.imageUrl} alt={`${car.brand} ${car.model}`}
                                         onError={e => { e.target.parentElement.innerHTML = '<div class="h-44 flex items-center justify-center"><svg class="w-16 h-16 text-slate-300" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path d="M5 17H3a2 2 0 01-2-2V9a2 2 0 012-2h1l2-3h10l2 3h1a2 2 0 012 2v6a2 2 0 01-2 2h-2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg></div>' }}
-                                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                                    />
+                                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
                                 </div>
                             ) : (
                                 <div className="h-44 bg-gradient-to-br from-blue-50 to-slate-100 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
