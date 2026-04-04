@@ -60,14 +60,14 @@ const CarSlider = ({ car }) => {
     )
 }
 
-// const DetailBadge = ({ icon, label }) => {
-//     return (
-//         <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-700/50 rounded-lg px-2.5 py-1.5">
-//             <span className="text-slate-400 dark:text-slate-500">{icon}</span>
-//             <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">{label}</span>
-//         </div>
-//     )
-// }
+const DetailBadge = ({ icon, label }) => {
+    return (
+        <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-700/50 rounded-lg px-2.5 py-1.5">
+            <span className="text-slate-400 dark:text-slate-500">{icon}</span>
+            <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">{label}</span>
+        </div>
+    )
+}
 
 
 export default function UserCars() {
