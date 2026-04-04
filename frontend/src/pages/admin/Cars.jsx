@@ -166,10 +166,10 @@ export default function AdminCars() {
             const response = await API.get('/findAllCar')
             setCars(response.data)
             setMsg(editId ? 'Car updated successfully' : 'Car added successfully')
-            setTimeout(() => setMsg(''), 3000)
+            setTimeout(() => setMsg(''), 2000)
         } catch {
             setMsg('Failed to save car')
-            setTimeout(() => setMsg(''), 3000)
+            setTimeout(() => setMsg(''), 2000)
         }
     }
 
