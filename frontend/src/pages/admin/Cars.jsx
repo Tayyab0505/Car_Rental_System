@@ -389,12 +389,19 @@ export default function AdminCars() {
                                     <div className="flex items-start justify-between mb-2">
                                         <div>
                                             <h3 className="font-semibold text-slate-800 dark:text-slate-100" style={{ fontFamily: 'Outfit,sans-serif' }}>{car.brand} {car.model}</h3>
-                                            <p className="text-blue-700 dark:text-blue-400 font-semibold text-xl mt-0.5" style={{ fontFamily: 'Outfit,sans-serif' }}>
-                                                ${Number(car.pricePerDay).toLocaleString()}<span className="text-slate-400 text-xs font-normal">/day</span>
-                                            </p>
+                                            <div className="flex items-baseline gap-2 mt-0.5 flex-wrap">
+                                                <p className="text-blue-700 dark:text-blue-400 font-semibold text-xl mt-0.5" style={{ fontFamily: 'Outfit,sans-serif' }}>
+                                                    ${Number(car.pricePerDay).toLocaleString()}<span className="text-slate-400 text-xs font-normal">/day</span>
+                                                </p>
+                                                {car.pricePerHour && (
+                                                    <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">
+                                                        ${Number(car.pricePerHour).toLocaleString()}<span className="text-slate-400 text-xs font-normal">/hr</span>
+                                                    </p>
+                                                )}
+                                            </div>
                                         </div>
-                                        <span className={`text-xs px-2.5 py-1 rounded-full font-medium flex-shrink-0 ${car.availability ? 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400' : 'bg-red-50 dark:bg-red-900/40 text-red-600 dark:text-red-400'}`}>
-                                            {car.availability ? 'Available' : 'Unavailable'}
+                                        <span className={`text-xs px-2.5 py-1 rounded-full font-medium flex-shrink-0 ${sc.class}`}>
+                                            {sc.label}
                                         </span>
                                     </div>
 
@@ -432,7 +439,8 @@ export default function AdminCars() {
                                     </div>
                                 </div>
                             </div>
-                        ))}
+                        )
+                    })}
                 </div>
             )}
 
@@ -460,13 +468,7 @@ export default function AdminCars() {
                             {/* Basic fields */}
                             {[
                                 ['Brand', 'brand', 'text', 'e.g. Toyota'],
-                                ['Model', 'model', 'text', 'e.g. Corolla'],
-                                ['Price per day ($)', 'pricePerDay', 'number', 'e.g. 50'],
-                                ['Image URL 1 (main)', 'imageUrl', 'text', 'https://...'],
-                                ['Image URL 2', 'imageUrl2', 'text', 'https://...'],
-                                ['Image URL 3', 'imageUrl3', 'text', 'https://...'],
-                                ['Year', 'year', 'number', 'e.g. 2023'],
-                                ['Mileage', 'mileage', 'text', 'e.g. 15,000 km'],
+                                ['Model', 'model', 'text', 'e.g. Corolla']
                             ].map(([label, key, type, ph]) => (
                                 <div key={key} className="mb-4">
                                     <label className={labelClass}>{label}</label>
@@ -476,6 +478,28 @@ export default function AdminCars() {
                                     />
                                 </div>
                             ))}
+
+                            {/* Category */}
+                            <div className="mb-4">
+                                <label className={labelClass}>Category</label>
+                                <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className={selectClass}>
+                                    <option value="">Select category</option>
+                                    {['SUV', 'Sedan', 'Hatchback', 'Luxury', 'Coupe', 'Pickup', 'Van'].map(c => <option key={c} value={c}>{c}</option>)}
+                                </select>
+                            </div>
+
+                            {/* Pricing */}
+                            <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 mt-5">Pricing</p>
+                            <div className="grid grid-cols-2 gap-3 mb-4">
+                                <div>
+                                    <label className={labelClass}>Price per day ($)</label>
+                                    <input type="number" placeholder="e.g. 100" value={form.pricePerDay} onChange={e => setForm({ ...form, pricePerDay: e.target.value })} className={inputClass} />
+                                </div>
+                                <div>
+                                    <label className={labelClass}>Price per hour ($)</label>
+                                    <input type="number" placeholder="e.g. 15" value={form.pricePerHour} onChange={e => setForm({ ...form, pricePerHour: e.target.value })} className={inputClass} />
+                                </div>
+                            </div>
 
                             <div className="mb-4">
                                 <label className={labelClass}>Transmission</label>
