@@ -3,7 +3,7 @@ import API from '../../api/axios'
 import locations from '../../data/locations'
 
 const emptyForm = {
-    brand: '', model: '', pricePerDay: '', pricePerHour: '', availability: true, status: 'available',
+    brand: '', model: '', pricePerDay: '', priceperhour: '', availability: true, status: 'available',
     imageUrl: '', imageUrl2: '', imageUrl3: '', country: '', city: '', year: '', transmission: '', fuelType: '', mileage: '', category: '', seats: ''
 }
 
@@ -162,7 +162,7 @@ export default function AdminCars() {
             brand: car.brand || '',
             model: car.model || '',
             pricePerDay: car.pricePerDay || '',
-            pricePerHour: car.pricePerHour || '',
+            priceperhour: car.priceperhour || '',
             availability: car.availability,
             status: car.status || 'available',
             imageUrl: car.imageUrl || '',
@@ -398,13 +398,14 @@ export default function AdminCars() {
                                     <div className="flex items-start justify-between mb-2">
                                         <div>
                                             <h3 className="font-semibold text-slate-800 dark:text-slate-100" style={{ fontFamily: 'Outfit,sans-serif' }}>{car.brand} {car.model}</h3>
+
                                             <div className="flex items-baseline gap-2 mt-0.5 flex-wrap">
                                                 <p className="text-blue-700 dark:text-blue-400 font-semibold text-xl mt-0.5" style={{ fontFamily: 'Outfit,sans-serif' }}>
                                                     ${Number(car.pricePerDay).toLocaleString()}<span className="text-slate-400 text-xs font-normal">/day</span>
                                                 </p>
-                                                {car.pricePerHour && (
+                                                {car.priceperhour && (
                                                     <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">
-                                                        ${Number(car.pricePerHour).toLocaleString()}<span className="text-slate-400 text-xs font-normal">/hr</span>
+                                                        ${Number(car.priceperhour).toLocaleString()}<span className="text-slate-400 text-xs font-normal">/hr</span>
                                                     </p>
                                                 )}
                                             </div>
@@ -425,20 +426,28 @@ export default function AdminCars() {
                                     )}
 
                                     {/* Detail badges */}
-                                    {(car.year || car.transmission || car.fuelType || car.mileage) && (
+                                    {(car.year || car.transmission || car.fuelType || car.mileage || car.seats) && (
                                         <div className="grid grid-cols-2 gap-1.5 mb-3">
                                             {car.year && <DetailBadge icon={
                                                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>
                                             } label={car.year} />}
+
                                             {car.transmission && <DetailBadge icon={
                                                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><circle cx="5" cy="12" r="2" /><circle cx="19" cy="5" r="2" /><circle cx="19" cy="19" r="2" /><path d="M5 14v4a2 2 0 002 2h10M5 10V6a2 2 0 012-2h10M19 7v10" /></svg>
                                             } label={car.transmission} />}
+
                                             {car.fuelType && <DetailBadge icon={
                                                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M3 22V8l6-6h6l2 2v2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2v6" /><path d="M9 2v6H3" /></svg>
                                             } label={car.fuelType} />}
+
                                             {car.mileage && <DetailBadge icon={
                                                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2z" /><path d="M12 6v6l4 2" /></svg>
                                             } label={car.mileage} />}
+
+                                            {car.seats && <DetailBadge icon={
+                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" /></svg>
+                                            } label={car.seats} />}
                                         </div>
                                     )}
 
@@ -506,7 +515,7 @@ export default function AdminCars() {
                                 </div>
                                 <div>
                                     <label className={labelClass}>Price per hour ($)</label>
-                                    <input type="number" placeholder="e.g. 15" value={form.pricePerHour} onChange={e => setForm({ ...form, pricePerHour: e.target.value })} className={inputClass} />
+                                    <input type="number" placeholder="e.g. 15" value={form.priceperhour} onChange={e => setForm({ ...form, priceperhour: e.target.value })} className={inputClass} />
                                 </div>
                             </div>
 
