@@ -3,8 +3,8 @@ import API from '../../api/axios'
 import locations from '../../data/locations'
 
 const emptyForm = {
-    brand: '', model: '', pricePerDay: '', availability: true,
-    imageUrl: '', country: '', city: '', imageUrl2: '', imageUrl3: '', year: '', transmission: '', fuelType: '', mileage: ''
+    brand: '', model: '', pricePerDay: '', pricePerHour: '', availability: true, status: 'available',
+    imageUrl: '', imageUrl2: '', imageUrl3: '', country: '', city: '', year: '', transmission: '', fuelType: '', mileage: '', category: '', seats: ''
 }
 
 const countries = Object.keys(locations)
@@ -76,6 +76,8 @@ export default function AdminCars() {
     const [brandFilter, setBrandFilter] = useState('all')
     const [countryFilter, setCountryFilter] = useState('all')
     const [cityFilter, setCityFilter] = useState('all')
+    const [categoryFilter, setCategoryFilter] = useState('all')
+    const [statusFilter, setStatusFilter] = useState('all')
     const [sortOrder, setSortOrder] = useState('none')
     const [minPrice, setMinPrice] = useState(0)
     const [maxPrice, setMaxPrice] = useState(0)
@@ -118,11 +120,13 @@ export default function AdminCars() {
         if (brandFilter !== 'all') list = list.filter(c => c.brand === brandFilter)
         if (countryFilter !== 'all') list = list.filter(c => c.country === countryFilter)
         if (cityFilter !== 'all') list = list.filter(c => c.city === cityFilter)
+        if (categoryFilter !== 'all') list = list.filter(c => c.category === categoryFilter)
+        if (statusFilter !== 'all') list = list.filter(c => (c.status || 'available') === statusFilter)
         list = list.filter(c => Number(c.pricePerDay) >= sliderMin && Number(c.pricePerDay) <= sliderMax)
         if (sortOrder === 'asc') list.sort((a, b) => Number(a.pricePerDay) - Number(b.pricePerDay))
         if (sortOrder === 'desc') list.sort((a, b) => Number(b.pricePerDay) - Number(a.pricePerDay))
         return list
-    }, [cars, brandFilter, countryFilter, cityFilter, sliderMin, sliderMax, sortOrder])
+    }, [cars, brandFilter, countryFilter, cityFilter, categoryFilter, statusFilter, sliderMin, sliderMax, sortOrder])
 
     const handleSliderMin = (val) => setSliderMin(Math.min(Number(val), sliderMax - 1))
     const handleSliderMax = (val) => setSliderMax(Math.max(Number(val), sliderMin + 1))
@@ -130,20 +134,27 @@ export default function AdminCars() {
     const handleInputMax = (val) => setSliderMax(Math.min(maxPrice, Math.max(Number(val), sliderMin + 1)))
 
     const resetFilters = () => {
-        setBrandFilter('all'); setCountryFilter('all'); setCityFilter('all')
+        setBrandFilter('all'); setCountryFilter('all'); setCityFilter('all'); setCategoryFilter('all'); setStatusFilter('all')
         setSortOrder('none'); setSliderMin(minPrice); setSliderMax(maxPrice)
     }
 
-    const isFiltered = brandFilter !== 'all' || countryFilter !== 'all' || cityFilter !== 'all' ||
-        sortOrder !== 'none' || sliderMin !== minPrice || sliderMax !== maxPrice
+    const isFiltered = brandFilter !== 'all' || countryFilter !== 'all' || cityFilter !== 'all' || categoryFilter !== 'all' ||
+        statusFilter !== 'all' || sortOrder !== 'none' || sliderMin !== minPrice || sliderMax !== maxPrice
 
-    const openAdd = () => { setForm(emptyForm); setEditId(null); setShowModal(true) }
+    const openAdd = () => {
+        setForm(emptyForm);
+        setEditId(null);
+        setShowModal(true)
+    }
+
     const openEdit = (car) => {
         setForm({
             brand: car.brand || '',
             model: car.model || '',
             pricePerDay: car.pricePerDay || '',
+            pricePerHour: car.pricePerHour || '',
             availability: car.availability,
+            status: car.status || 'available',
             imageUrl: car.imageUrl || '',
             imageUrl2: car.imageUrl2 || '',
             imageUrl3: car.imageUrl3 || '',
@@ -152,7 +163,9 @@ export default function AdminCars() {
             year: car.year || '',
             transmission: car.transmission || '',
             fuelType: car.fuelType || '',
-            mileage: car.mileage || ''
+            mileage: car.mileage || '',
+            category: car.category || '',
+            seats: car.seats || ''
         })
         setEditId(car.id)
         setShowModal(true)
@@ -207,7 +220,7 @@ export default function AdminCars() {
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                         <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
                     </svg>
-                    <span className="hidden sm:inline">Add car</span>
+                    <span className="hidden sm:inline">Add new car</span>
                     <span className="sm:hidden">Add</span>
                 </button>
             </div>
@@ -241,6 +254,15 @@ export default function AdminCars() {
                                 <label className={labelClass}>Brand</label>
                                 <select value={brandFilter} onChange={e => setBrandFilter(e.target.value)} className={selectClass}>
                                     {brands.map(b => <option key={b} value={b}>{b === 'all' ? 'All brands' : b}</option>)}
+                                </select>
+                            </div>
+
+                            {/* Category */}
+                            <div>
+                                <label className={labelClass}>Category</label>
+                                <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className={selectClass}>
+                                    <option value="all">All categories</option>
+                                    {['SUV', 'Sedan', 'Hatchback', 'Luxury', 'Coupe', 'Pickup', 'Van'].map(c => <option key={c} value={c}>{c}</option>)}
                                 </select>
                             </div>
 
