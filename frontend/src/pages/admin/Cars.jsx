@@ -62,6 +62,12 @@ const DetailBadge = ({ icon, label }) => (
     </div>
 )
 
+const statusConfig = {
+    available: { label: 'Available', class: 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400' },
+    booked: { label: 'Booked', class: 'bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400' },
+    maintenance: { label: 'Maintenance', class: 'bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400' },
+}
+
 export default function AdminCars() {
     const [cars, setCars] = useState([])
     const [loading, setLoading] = useState(true)
@@ -509,6 +515,24 @@ export default function AdminCars() {
                                     <input type="text" placeholder="https://..." value={form[key]} onChange={e => setForm({ ...form, [key]: e.target.value })} className={inputClass} />
                                 </div>
                             ))}
+
+                            {/* Specs */}
+                            <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 mt-5">Specifications</p>
+                            <div className="grid grid-cols-2 gap-3 mb-4">
+                                <div>
+                                    <label className={labelClass}>Year</label>
+                                    <input type="number" placeholder="e.g. 2023" value={form.year} onChange={e => setForm({ ...form, year: e.target.value })} className={inputClass} />
+                                </div>
+                                <div>
+                                    <label className={labelClass}>Seats</label>
+                                    <input type="number" placeholder="e.g. 5" value={form.seats} onChange={e => setForm({ ...form, seats: e.target.value })} className={inputClass} />
+                                </div>
+                            </div>
+
+                            <div className="mb-4">
+                                <label className={labelClass}>Mileage</label>
+                                <input type="text" placeholder="e.g. 15,000 km" value={form.mileage} onChange={e => setForm({ ...form, mileage: e.target.value })} className={inputClass} />
+                            </div>
 
                             <div className="mb-4">
                                 <label className={labelClass}>Transmission</label>
