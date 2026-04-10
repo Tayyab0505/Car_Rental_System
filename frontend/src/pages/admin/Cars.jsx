@@ -501,6 +501,15 @@ export default function AdminCars() {
                                 </div>
                             </div>
 
+                            {/* Images */}
+                            <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 mt-5">Images</p>
+                            {[['Image URL 1 (main)', 'imageUrl'], ['Image URL 2', 'imageUrl2'], ['Image URL 3', 'imageUrl3']].map(([label, key]) => (
+                                <div key={key} className='mb-4'>
+                                    <label className={labelClass}>{label}</label>
+                                    <input type="text" placeholder="https://..." value={form[key]} onChange={e => setForm({ ...form, [key]: e.target.value })} className={inputClass} />
+                                </div>
+                            ))}
+
                             <div className="mb-4">
                                 <label className={labelClass}>Transmission</label>
                                 <select value={form.transmission} onChange={e => setForm({ ...form, transmission: e.target.value })} className={selectClass}>
