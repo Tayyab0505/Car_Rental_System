@@ -67,7 +67,7 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       allowNull: true
     },
-    pricePerHour: {
+    priceperhour: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: true
     },

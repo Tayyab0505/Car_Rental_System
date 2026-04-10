@@ -108,6 +108,10 @@ export default function AdminCars() {
                         setSliderMax(hi)
                     }
                 })
+                .catch(error => {
+                    console.error('API Error:', error.response?.data || error.message)
+                    setMsg('Failed to load cars. Check backend server.')
+                })
 
                 .finally(() => setLoading(false))
         }
@@ -273,7 +277,6 @@ export default function AdminCars() {
                             </div>
 
                             {/* Status */}
-
                             <div>
                                 <label className={labelClass}>Status</label>
                                 <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className={selectClass}>
@@ -440,8 +443,8 @@ export default function AdminCars() {
                                     )}
 
                                     <div className="flex gap-2">
-                                        <button onClick={() => openEdit(car)} className="flex-1 py-2 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer">Edit</button>
-                                        <button onClick={() => setDeleteModal(car.id)} className="flex-1 py-2 rounded-lg border border-red-100 dark:border-red-900/50 text-red-500 dark:text-red-400 text-sm hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer">Delete</button>
+                                        <button onClick={() => openEdit(car)} className="flex-1 py-2 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer">Edit car details</button>
+                                        <button onClick={() => setDeleteModal(car.id)} className="flex-1 py-2 rounded-lg border border-red-100 dark:border-red-900/50 text-red-500 dark:text-red-400 text-sm hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer">Delete car</button>
                                     </div>
                                 </div>
                             </div>
@@ -521,7 +524,7 @@ export default function AdminCars() {
                             <div className="grid grid-cols-2 gap-3 mb-4">
                                 <div>
                                     <label className={labelClass}>Year</label>
-                                    <input type="number" placeholder="e.g. 2023" value={form.year} onChange={e => setForm({ ...form, year: e.target.value })} className={inputClass} />
+                                    <input type="number" placeholder="e.g. 2026" value={form.year} onChange={e => setForm({ ...form, year: e.target.value })} className={inputClass} />
                                 </div>
                                 <div>
                                     <label className={labelClass}>Seats</label>
@@ -558,11 +561,9 @@ export default function AdminCars() {
                             {/* Country dropdown */}
                             <div className="mb-4">
                                 <label className={labelClass}>Country</label>
-                                <select
-                                    value={form.country}
+                                <select value={form.country}
                                     onChange={e => setForm({ ...form, country: e.target.value, city: '' })}
-                                    className={selectClass}
-                                >
+                                    className={selectClass} >
                                     <option value="">Select country</option>
                                     {countries.map(c => <option key={c} value={c}>{c}</option>)}
                                 </select>
@@ -571,12 +572,11 @@ export default function AdminCars() {
                             {/* City dropdown — updates based on country */}
                             <div className="mb-4">
                                 <label className={labelClass}>City</label>
-                                <select
-                                    value={form.city}
+                                <select value={form.city}
                                     onChange={e => setForm({ ...form, city: e.target.value })}
                                     disabled={!form.country}
-                                    className={`${selectClass} disabled:opacity-50 disabled:cursor-not-allowed`}
-                                >
+                                    className={`${selectClass} disabled:opacity-50 disabled:cursor-not-allowed`}>
+
                                     <option value="">{form.country ? 'Select city' : 'Select country first'}</option>
                                     {form.country && locations[form.country]?.map(city => (
                                         <option key={city} value={city}>{city}</option>
@@ -585,12 +585,20 @@ export default function AdminCars() {
                             </div>
 
                             {/* Availability */}
+                            <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 mt-5">Status</p>
+                            <div className="mb-4">
+                                <label className={labelClass}>Availability status</label>
+                                <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })} className={selectClass}>
+                                    <option value="available">Available</option>
+                                    <option value="booked">Booked</option>
+                                    <option value="maintenance">Maintenance</option>
+                                </select>
+                            </div>
                             <div className="mb-6 flex items-center gap-3">
                                 <input type="checkbox" id="avail" checked={form.availability}
                                     onChange={e => setForm({ ...form, availability: e.target.checked })}
-                                    className="w-4 h-4 accent-blue-600"
-                                />
-                                <label htmlFor="avail" className="text-sm text-slate-600 dark:text-slate-300 cursor-pointer">Available for booking</label>
+                                    className="w-4 h-4 accent-blue-600" />
+                                <label htmlFor="avail" className="text-sm text-slate-600 dark:text-slate-300 cursor-pointer">Show as available for booking</label>
                             </div>
 
                             <div className="flex gap-3">
