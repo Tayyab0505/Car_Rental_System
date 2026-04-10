@@ -368,57 +368,71 @@ export default function AdminCars() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                    {filtered.map(car => (
-                        <div key={car.id} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                            <CarSlider car={car} />
-                            <div className="p-5">
-                                <div className="flex items-start justify-between mb-2">
-                                    <div>
-                                        <h3 className="font-semibold text-slate-800 dark:text-slate-100" style={{ fontFamily: 'Outfit,sans-serif' }}>{car.brand} {car.model}</h3>
-                                        <p className="text-blue-700 dark:text-blue-400 font-semibold text-xl mt-0.5" style={{ fontFamily: 'Outfit,sans-serif' }}>
-                                            ${Number(car.pricePerDay).toLocaleString()}<span className="text-slate-400 text-xs font-normal">/day</span>
-                                        </p>
-                                    </div>
-                                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium flex-shrink-0 ${car.availability ? 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400' : 'bg-red-50 dark:bg-red-900/40 text-red-600 dark:text-red-400'}`}>
-                                        {car.availability ? 'Available' : 'Unavailable'}
-                                    </span>
-                                </div>
+                    {filtered.map(car => {
+                        const carStatus = car.status || 'available'
+                        const sc = statusConfig[carStatus] || statusConfig.available
 
-                                {/* Location badge */}
-                                {(car.city || car.country) && (
-                                    <div className="flex items-center gap-1 mt-1 mb-2">
-                                        <svg className="w-3 h-3 text-slate-400 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-                                        </svg>
-                                        <span className="text-xs text-slate-400 dark:text-slate-500">{[car.city, car.country].filter(Boolean).join(', ')}</span>
+                        return (
+                            <div key={car.id} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                                <CarSlider car={car} />
+
+                                {/* Category tag on image */}
+                                {car.category && (
+                                    <div className='relative'>
+                                        <span className='absolute -top-7 left-3 text-xs bg-black/50 text-white px-2 py-0.5 rounded-full backdrop-blur-sm'>
+                                            {car.category}
+                                        </span>
                                     </div>
                                 )}
 
-                                {/* Detail badges */}
-                                {(car.year || car.transmission || car.fuelType || car.mileage) && (
-                                    <div className="grid grid-cols-2 gap-1.5 mb-3">
-                                        {car.year && <DetailBadge icon={
-                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>
-                                        } label={car.year} />}
-                                        {car.transmission && <DetailBadge icon={
-                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><circle cx="5" cy="12" r="2" /><circle cx="19" cy="5" r="2" /><circle cx="19" cy="19" r="2" /><path d="M5 14v4a2 2 0 002 2h10M5 10V6a2 2 0 012-2h10M19 7v10" /></svg>
-                                        } label={car.transmission} />}
-                                        {car.fuelType && <DetailBadge icon={
-                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M3 22V8l6-6h6l2 2v2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2v6" /><path d="M9 2v6H3" /></svg>
-                                        } label={car.fuelType} />}
-                                        {car.mileage && <DetailBadge icon={
-                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2z" /><path d="M12 6v6l4 2" /></svg>
-                                        } label={car.mileage} />}
+                                <div className="p-5">
+                                    <div className="flex items-start justify-between mb-2">
+                                        <div>
+                                            <h3 className="font-semibold text-slate-800 dark:text-slate-100" style={{ fontFamily: 'Outfit,sans-serif' }}>{car.brand} {car.model}</h3>
+                                            <p className="text-blue-700 dark:text-blue-400 font-semibold text-xl mt-0.5" style={{ fontFamily: 'Outfit,sans-serif' }}>
+                                                ${Number(car.pricePerDay).toLocaleString()}<span className="text-slate-400 text-xs font-normal">/day</span>
+                                            </p>
+                                        </div>
+                                        <span className={`text-xs px-2.5 py-1 rounded-full font-medium flex-shrink-0 ${car.availability ? 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400' : 'bg-red-50 dark:bg-red-900/40 text-red-600 dark:text-red-400'}`}>
+                                            {car.availability ? 'Available' : 'Unavailable'}
+                                        </span>
                                     </div>
-                                )}
 
-                                <div className="flex gap-2">
-                                    <button onClick={() => openEdit(car)} className="flex-1 py-2 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer">Edit</button>
-                                    <button onClick={() => setDeleteModal(car.id)} className="flex-1 py-2 rounded-lg border border-red-100 dark:border-red-900/50 text-red-500 dark:text-red-400 text-sm hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer">Delete</button>
+                                    {/* Location badge */}
+                                    {(car.city || car.country) && (
+                                        <div className="flex items-center gap-1 mt-1 mb-2">
+                                            <svg className="w-3 h-3 text-slate-400 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                                            </svg>
+                                            <span className="text-xs text-slate-400 dark:text-slate-500">{[car.city, car.country].filter(Boolean).join(', ')}</span>
+                                        </div>
+                                    )}
+
+                                    {/* Detail badges */}
+                                    {(car.year || car.transmission || car.fuelType || car.mileage) && (
+                                        <div className="grid grid-cols-2 gap-1.5 mb-3">
+                                            {car.year && <DetailBadge icon={
+                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>
+                                            } label={car.year} />}
+                                            {car.transmission && <DetailBadge icon={
+                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><circle cx="5" cy="12" r="2" /><circle cx="19" cy="5" r="2" /><circle cx="19" cy="19" r="2" /><path d="M5 14v4a2 2 0 002 2h10M5 10V6a2 2 0 012-2h10M19 7v10" /></svg>
+                                            } label={car.transmission} />}
+                                            {car.fuelType && <DetailBadge icon={
+                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M3 22V8l6-6h6l2 2v2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2v6" /><path d="M9 2v6H3" /></svg>
+                                            } label={car.fuelType} />}
+                                            {car.mileage && <DetailBadge icon={
+                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2z" /><path d="M12 6v6l4 2" /></svg>
+                                            } label={car.mileage} />}
+                                        </div>
+                                    )}
+
+                                    <div className="flex gap-2">
+                                        <button onClick={() => openEdit(car)} className="flex-1 py-2 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer">Edit</button>
+                                        <button onClick={() => setDeleteModal(car.id)} className="flex-1 py-2 rounded-lg border border-red-100 dark:border-red-900/50 text-red-500 dark:text-red-400 text-sm hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer">Delete</button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
                 </div>
             )}
 
