@@ -59,6 +59,23 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.TEXT,
       allowNull: true
     },
+    category: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    seats: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
+    pricePerHour: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true
+    },
+    status: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      defaultValue: 'available'
+    },
   }, {
     sequelize,
     tableName: 'car',
