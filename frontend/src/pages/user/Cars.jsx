@@ -1,8 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import API from '../../api/axios'
-import locations from '../../data/locations'
-
-const countries = Object.keys(locations)
 
 const CarSlider = ({ car }) => {
     const images = [car.imageUrl, car.imageUrl2, car.imageUrl3].filter(Boolean)
@@ -79,6 +76,7 @@ export default function UserCars() {
 
     const [filtersOpen, setFiltersOpen] = useState(false)
     const [brandFilter, setBrandFilter] = useState('all')
+    const [categoryFilter, setCategoryFilter] = useState('all')
     const [countryFilter, setCountryFilter] = useState('all')
     const [cityFilter, setCityFilter] = useState('all')
     const [sortOrder, setSortOrder] = useState('none')
@@ -125,12 +123,15 @@ export default function UserCars() {
         if (cityFilter !== 'all') {
             list = list.filter(c => c.city === cityFilter)
         }
+        if (categoryFilter !== 'all') {
+            list = list.filter(c => c.category === categoryFilter)
+        }
 
         list = list.filter(c => Number(c.pricePerDay) >= sliderMin && Number(c.pricePerDay) <= sliderMax)
         if (sortOrder === 'asc') list.sort((a, b) => Number(a.pricePerDay) - Number(b.pricePerDay))
         if (sortOrder === 'desc') list.sort((a, b) => Number(b.pricePerDay) - Number(a.pricePerDay))
         return list
-    }, [cars, brandFilter, countryFilter, cityFilter, sliderMin, sliderMax, sortOrder])
+    }, [cars, brandFilter, countryFilter, cityFilter, categoryFilter, sliderMin, sliderMax, sortOrder])
 
     const handleSliderMin = (val) => setSliderMin(Math.min(Number(val), sliderMax - 1))
     const handleSliderMax = (val) => setSliderMax(Math.max(Number(val), sliderMin + 1))
@@ -141,12 +142,13 @@ export default function UserCars() {
         setBrandFilter('all');
         setCountryFilter('all');
         setCityFilter('all')
+        setCategoryFilter('all')
         setSortOrder('none');
         setSliderMin(minPrice);
         setSliderMax(maxPrice)
     }
 
-    const isFiltered = brandFilter !== 'all' || countryFilter !== 'all' || cityFilter !== 'all' ||
+    const isFiltered = brandFilter !== 'all' || countryFilter !== 'all' || cityFilter !== 'all' || categoryFilter !== 'all' ||
         sortOrder !== 'none' || sliderMin !== minPrice || sliderMax !== maxPrice
 
     const handleBook = async () => {
@@ -221,6 +223,15 @@ export default function UserCars() {
                                     onChange={e => setBrandFilter(e.target.value)}
                                     className={selectClass} >
                                     {brands.map(b => <option key={b} value={b}>{b === 'all' ? 'All brands' : b}</option>)}
+                                </select>
+                            </div>
+
+                            {/* Category */}
+                            <div>
+                                <label className={labelClass}>Category</label>
+                                <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className={selectClass}>
+                                    <option value="all">All categories</option>
+                                    {['SUV', 'Sedan', 'Hatchback', 'Luxury', 'Coupe', 'Pickup', 'Van'].map(c => <option key={c} value={c}>{c}</option>)}
                                 </select>
                             </div>
 
@@ -346,10 +357,16 @@ export default function UserCars() {
                                 <div className="flex items-start justify-between mb-1">
                                     <div>
                                         <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-base" style={{ fontFamily: 'Outfit,sans-serif' }}>{car.brand} {car.model}</h3>
-
-                                        <p className="text-blue-700 dark:text-blue-400 font-semibold text-xl mt-0.5" style={{ fontFamily: 'Outfit,sans-serif' }}>
-                                            ${Number(car.pricePerDay).toLocaleString()}<span className="text-slate-400 text-xs font-normal">/day</span>
-                                        </p>
+                                        <div className="flex items-baseline gap-2 mt-0.5 flex-wrap">
+                                            <p className="text-blue-700 dark:text-blue-400 font-semibold text-xl mt-0.5" style={{ fontFamily: 'Outfit,sans-serif' }}>
+                                                ${Number(car.pricePerDay).toLocaleString()}<span className="text-slate-400 text-xs font-normal">/day</span>
+                                            </p>
+                                            {car.priceperhour && (
+                                                <p className="text-slate-500 dark:text-slate-400 text-sm">
+                                                    ${Number(car.priceperhour).toLocaleString()}<span className="text-xs font-normal">/hr</span>
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
                                     <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 flex-shrink-0">
                                         Available
