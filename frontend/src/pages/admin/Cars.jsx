@@ -266,6 +266,18 @@ export default function AdminCars() {
                                 </select>
                             </div>
 
+                            {/* Status */}
+
+                            <div>
+                                <label className={labelClass}>Status</label>
+                                <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className={selectClass}>
+                                    <option value="all">All statuses</option>
+                                    <option value="available">Available</option>
+                                    <option value="booked">Booked</option>
+                                    <option value="maintenance">Maintenance</option>
+                                </select>
+                            </div>
+
                             {/* Country */}
                             <div>
                                 <label className={labelClass}>Country</label>
