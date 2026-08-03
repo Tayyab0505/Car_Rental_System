@@ -15,32 +15,69 @@ const createBooking = async (data) => {
     }
 
     const car = await Car.findByPk(carId);
-    if (!car) throw new Error("Car not found");
+    if (!car) {
+        throw new Error("Car not found");
+    }
 
-    if (!car.availability) throw new Error("Car is not available");
+    if (!car.availability || car.status === 'booked' || car.status === 'maintenance') {
+        throw new Error("Car is not available for booking");
+    }
 
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const days = (end - start) / (1000 * 60 * 60 * 24);
-
-    if (days <= 0) throw new Error("Invalid date range");
-
-    const overlapping = await Booking.findOne({
+    const conflict = await Booking.findOne({
         where: {
             carId,
-            status: "pending",
-            [Op.and]: [
-                { startDate: { [Op.lte]: endDate } },
-                { endDate: { [Op.gte]: startDate } }
+            status: { [Op.in]: ['pending', 'confirmed'] },
+            [Op.or]: [
+                {
+                    startDate: { [Op.between]: [startDate, endDate] }
+                },
+                {
+                    endDate: { [Op.between]: [startDate, endDate] }
+                },
+                {
+                    [Op.and]: [
+                        { startDate: { [Op.lte]: startDate } },
+                        { endDate: { [Op.gte]: endDate } }
+                    ]
+                }
             ]
         }
     });
 
-    if (overlapping) {
-        throw new Error("Car is already booked for these dates");
+    if (conflict) {
+        throw new Error(`This car is already booked from ${conflict.startDate} to ${conflict.endDate}`);
+    };
+
+    const duplicate = await Booking.findOne({
+        where: {
+            userId,
+            carId,
+            status: { [Op.in]: ['pending', 'confirmed'] },
+            [Op.or]: [
+                { startDate: { [Op.between]: [startDate, endDate] } },
+                { endDate: { [Op.between]: [startDate, endDate] } },
+                {
+                    [Op.and]: [
+                        { startDate: { [Op.lte]: startDate } },
+                        { endDate: { [Op.gte]: endDate } }
+                    ]
+                }
+            ]
+        }
+    });
+
+    if (duplicate) {
+        throw new Error('You already have a booking for this car on these dates')
     }
 
-    const totalAmount = days * car.pricePerDay;
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const days = (end - start) / (1000 * 60 * 60 * 24);
+    const totalAmount = days * Number(car.pricePerDay);
+
+    if (days <= 0) {
+        throw new Error("Invalid date range");
+    }
 
     const booking = await Booking.create({
         userId,
@@ -54,9 +91,38 @@ const createBooking = async (data) => {
     return booking;
 };
 
+const confirmBooking = async (bookingId) => {
+    const booking = await Booking.findByPk(id);
+    if (!booking) {
+        throw new Error('Booking not found');
+    }
+
+    await booking.update({ status: 'confirmed' });
+    await Car.update(
+        { status: 'booked', availability: false },
+        { where: { id: booking.carId } }
+    );
+
+    if (booking.status === "confirmed") {
+        return {
+            success: false,
+            message: "Booking is already confirmed"
+        };
+    }
+
+    booking.status = "confirmed";
+    await booking.save();
+
+    return {
+        success: true,
+        booking
+    };
+
+
+};
+
 const updateBooking = async (id, data) => {
     const booking = await Booking.findByPk(id);
-
     if (!booking) {
         throw new Error("Booking not found");
     }
@@ -65,53 +131,36 @@ const updateBooking = async (id, data) => {
     return booking;
 };
 
-const confirmBooking = async (bookingId) => {
-    try {
-        const booking = await Booking.findOne({ where: { id: bookingId } });
-
-        if (!booking) {
-            return { message: "Booking not found" };
-        }
-
-        if (booking.status === "confirmed") {
-            return {
-                success: false,
-                message: "Booking is already confirmed"
-            };
-        }
-
-        booking.status = "confirmed";
-        await booking.save();
-
-        return {
-            success: true,
-            booking
-        };
-
-    } catch (error) {
-        console.error("Booking Confirm Service Error:", error);
-    }
-};
-
 const cancelBooking = async (id) => {
     const booking = await Booking.findByPk(id);
-
     if (!booking) {
         throw new Error("Booking not found");
     }
-
     await booking.update({ status: "cancelled" });
+
+    const otherActive = await Booking.findOne({
+        where: {
+            carId: booking.carId,
+            status: 'confirmed',
+            id: { [Op.ne]: id }
+        }
+    });
+    if (!otherActive) {
+        await Car.update(
+            { status: 'available', availability: true },
+            { where: { id: booking.carId } }
+        )
+    }
 
     return booking;
 };
 
 const getAllBookings = async () => {
-    return Booking.findAll();
+    return await Booking.findAll({ order: [['createdAt', 'DESC']] })
 };
 
 const getBookingById = async (id) => {
     const booking = await Booking.findByPk(id);
-
     if (!booking) {
         throw new Error("Booking not found");
     }
