@@ -71,6 +71,7 @@ export default function UserCars() {
     const [cars, setCars] = useState([])
     const [loading, setLoading] = useState(true)
     const [bookingModal, setBookingModal] = useState(null)
+    const [bookingError, setBookingError] = useState('')
     const [bookingForm, setBookingForm] = useState({ startDate: '', endDate: '' })
     const [msg, setMsg] = useState('')
 
@@ -152,12 +153,25 @@ export default function UserCars() {
         sortOrder !== 'none' || sliderMin !== minPrice || sliderMax !== maxPrice
 
     const handleBook = async () => {
+        setBookingError('');
+        if (!bookingForm.startDate || !bookingForm.endDate) {
+            setBookingError('Please select both start and end date');
+            return
+        }
+        if (new Date(bookingForm.startDate) >= new Date(bookingForm.endDate)) {
+            setBookingError('End date must be after start date');
+            return
+        }
+
         try {
-            await API.post('/booking', { carId: bookingModal.id, ...bookingForm })
-            setBookingModal(null)
-            setMsg('Booking created successfully!')
+            await API.post('/booking', { carId: bookingModal.id, ...bookingForm });
+            setBookingModal(null);
+            setBookingError('');
+            setMsg('Booking created successfully!');
             setTimeout(() => setMsg(''), 2000)
-        } catch { setMsg('Booking failed') }
+        } catch (err) {
+            setBookingError(err.response?.data?.message || 'Booking failed')
+        }
     };
 
     const range = maxPrice - minPrice || 1
@@ -440,17 +454,23 @@ export default function UserCars() {
                                 {[['Start date', 'startDate'], ['End date', 'endDate']].map(([label, key]) => (
                                     <div key={key} className='mb-4'>
                                         <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">{label}</label>
+
                                         <input type="date" value={bookingForm[key]}
                                             onChange={e => setBookingForm({ ...bookingForm, [key]: e.target.value })}
                                             className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-700 outline-none focus:border-blue-500 transition-all" />
                                     </div>
                                 ))}
 
-
                                 <div className="flex gap-3 mt-2">
-                                    <button onClick={() => setBookingModal(null)} className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer transition-colors">
+                                    <button onClick={() => { setBookingModal(null); setBookingError('') }} className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer transition-colors">
                                         Cancel
                                     </button>
+
+                                    {bookingError && (
+                                        <div className="mb-3 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-600 dark:text-red-400 rounded-lg text-sm">
+                                            {bookingError}
+                                        </div>
+                                    )}
 
                                     <button onClick={handleBook} className="flex-1 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium cursor-pointer transition-colors">
                                         Confirm booking
