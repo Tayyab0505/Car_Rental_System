@@ -1,6 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { useTheme } from '../context/ThemeContext'
 
 const adminLinks = [
     {
@@ -8,10 +7,10 @@ const adminLinks = [
         label: 'Overview',
         icon: (
             <svg className="size-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                <rect x="3" y="3" width="7" height="7" rx="1" />
-                <rect x="14" y="3" width="7" height="7" rx="1" />
-                <rect x="3" y="14" width="7" height="7" rx="1" />
-                <rect x="14" y="14" width="7" height="7" rx="1" />
+                <rect x="3" y="3" width="7" height="7" rx="1.5" />
+                <rect x="14" y="3" width="7" height="7" rx="1.5" />
+                <rect x="3" y="14" width="7" height="7" rx="1.5" />
+                <rect x="14" y="14" width="7" height="7" rx="1.5" />
             </svg>
         )
     },
@@ -39,39 +38,9 @@ const adminLinks = [
     }
 ]
 
-const userLinks = [
-    {
-        to: '/dashboard/cars',
-        label: 'Browse Cars',
-        icon: (
-            <svg className="size-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                <path d="M5 17H3a2 2 0 01-2-2V9a2 2 0 012-2h1l2-3h10l2 3h1a2 2 0 012 2v6a2 2 0 01-2 2h-2" />
-                <circle cx="7" cy="17" r="2" />
-                <circle cx="17" cy="17" r="2" />
-                <path d="M5 9h14" />
-            </svg>
-        )
-    },
-    {
-        to: '/dashboard/bookings',
-        label: 'My Bookings',
-        icon: (
-            <svg className="size-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                <rect x="3" y="4" width="18" height="18" rx="2" />
-                <path d="M16 2v4M8 2v4M3 10h18" />
-            </svg>
-        )
-    }
-]
-
 export default function Sidebar({ onClose }) {
     const { user, logout } = useAuth()
-    const { dark, toggle } = useTheme()
-
     const navigate = useNavigate()
-
-    const isAdmin = user?.role === 'admin'
-    const links = isAdmin ? adminLinks : userLinks
 
     const handleLogout = () => {
         logout()
@@ -79,189 +48,122 @@ export default function Sidebar({ onClose }) {
     }
 
     const handleNavClick = () => {
-        if (onClose) {
-            onClose()
-        }
+        if (onClose) onClose()
     }
 
     return (
-        <div className="w-64 h-screen bg-[#081b33] flex flex-col text-white border-r border-white/5">
+        <div className="relative w-full h-dvh overflow-hidden bg-linear-to-b from-[#171b2b] via-[#151a29] to-[#101521] text-white flex flex-col border-r border-white/5 shadow-[12px_0_35px_rgba(15,23,42,0.12)]">
+            <div className="absolute -top-36 -left-24 size-72 rounded-full bg-indigo-500/10 blur-3xl" />
+            <div className="absolute bottom-10 -right-28 size-64 rounded-full bg-violet-500/8 blur-3xl" />
 
-            <div className="h-20 px-5 flex items-center justify-between border-b border-white/10">
-
+            <div className="relative h-22 px-5 flex items-center justify-between border-b border-white/8">
                 <div className="flex items-center gap-3">
-
-                    <div className="size-11 rounded-xl bg-linear-to-br from-blue-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-blue-500/20">
-
-                        <svg
-                            className="size-6 text-white"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth={1.7}
-                            viewBox="0 0 24 24"
-                        >
+                    <div className="size-12 rounded-2xl bg-linear-to-br from-indigo-500 via-blue-600 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-950/40">
+                        <svg className="size-7 text-white" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                             <path d="M5 17H3a2 2 0 01-2-2V9a2 2 0 012-2h1l2-3h10l2 3h1a2 2 0 012 2v6a2 2 0 01-2 2h-2" />
                             <circle cx="7" cy="17" r="2" />
                             <circle cx="17" cy="17" r="2" />
                             <path d="M5 9h14" />
                         </svg>
-
                     </div>
 
                     <div>
-
-                        <h1 className="text-lg font-bold tracking-wide">
-                            Drive<span className="text-cyan-400">Ease</span>
+                        <h1 className="text-lg font-bold tracking-tight">
+                            Drive<span className="text-indigo-300">Ease</span>
                         </h1>
-
-                        <p className="text-[9px] text-slate-400 tracking-[0.15em]">
-                            PREMIUM RENTALS
-                        </p>
-
+                        <p className="text-[9px] text-slate-500 tracking-[0.24em] uppercase">Admin Console</p>
                     </div>
-
                 </div>
 
                 <button
                     onClick={onClose}
-                    className="lg:hidden size-8 rounded-lg flex items-center justify-center bg-white/10 text-slate-300 hover:bg-white/15"
+                    className="lg:hidden size-9 rounded-xl bg-white/5 text-slate-300 flex items-center justify-center hover:bg-white/10 transition"
                 >
-                    <svg
-                        className="size-4"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                        viewBox="0 0 24 24"
-                    >
-                        <path d="M18 6L6 18M6 6l12 12" />
-                    </svg>
+                    <svg className="size-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" /></svg>
                 </button>
-
             </div>
 
-            <div className="p-4">
-
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-3">
-
+            <div className="relative px-4 pt-5">
+                <div className="rounded-3xl border border-white/8 bg-white/5 p-4 shadow-[0_12px_30px_rgba(0,0,0,0.16)]">
                     <div className="flex items-center gap-3">
-
-                        <div className="size-11 rounded-full bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-200 font-semibold">
-                            {user?.name?.charAt(0)?.toUpperCase()}
+                        <div className="size-13 rounded-2xl bg-linear-to-br from-indigo-500/25 to-violet-500/10 border border-indigo-300/15 text-indigo-200 flex items-center justify-center text-lg font-bold">
+                            {user?.name?.charAt(0)?.toUpperCase() || 'A'}
                         </div>
 
                         <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold text-slate-100 truncate">{user?.name || 'Administrator'}</p>
 
-                            <p className="text-sm font-semibold text-white truncate">
-                                {user?.name}
-                            </p>
-
-                            <div className="flex items-center gap-1.5 mt-1">
-
+                            <div className="flex items-center gap-2 mt-1">
                                 <span className="size-1.5 rounded-full bg-emerald-400" />
-
-                                <span className="text-xs text-slate-400 capitalize">
-                                    {user?.role} account
-                                </span>
-
+                                <span className="text-[11px] text-slate-500">Administrator</span>
                             </div>
-
                         </div>
-
                     </div>
-
                 </div>
-
             </div>
 
-            <nav className="flex-1 px-3">
+            <nav className="relative flex-1 px-3 pt-7">
+                <p className="px-3 mb-3 text-[10px] font-semibold text-slate-600 uppercase tracking-[0.24em]">Management</p>
 
-                <p className="px-3 mb-3 text-[10px] font-semibold text-slate-500 uppercase tracking-[0.18em]">
-                    {isAdmin ? 'Management' : 'Discover'}
-                </p>
-
-                <div className="space-y-1.5">
-
-                    {links.map(link => (
+                <div className="space-y-2">
+                    {adminLinks.map(link => (
                         <NavLink
                             key={link.to}
                             to={link.to}
                             onClick={handleNavClick}
                             className={({ isActive }) =>
-                                `flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${isActive
-                                    ? 'bg-linear-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/20'
-                                    : 'text-slate-300 hover:bg-white/10 hover:text-white'
+                                `group relative flex items-center gap-3 px-3 py-3 rounded-2xl border text-sm font-medium transition-all duration-200 ${isActive
+                                    ? 'bg-white/9 border-white/10 text-white shadow-[0_12px_30px_rgba(0,0,0,0.16)]'
+                                    : 'border-transparent text-slate-500 hover:bg-white/5 hover:text-slate-200'
                                 }`
                             }
                         >
-                            {link.icon}
-                            <span>{link.label}</span>
+                            {({ isActive }) => (
+                                <>
+                                    <span className={`size-10 rounded-xl flex items-center justify-center transition-all ${isActive
+                                            ? 'bg-linear-to-br from-indigo-500 to-blue-600 text-white shadow-md shadow-indigo-950/30'
+                                            : 'bg-white/4 text-slate-500 group-hover:bg-white/7 group-hover:text-indigo-300'
+                                        }`}>
+                                        {link.icon}
+                                    </span>
+
+                                    <span>{link.label}</span>
+
+                                    {isActive && (
+                                        <span className="absolute right-4 size-1.5 rounded-full bg-indigo-300 shadow-[0_0_10px_rgba(165,180,252,0.8)]" />
+                                    )}
+                                </>
+                            )}
                         </NavLink>
                     ))}
-
                 </div>
-
             </nav>
 
-            <div className="px-3 pb-4">
-
-                <button
-                    onClick={toggle}
-                    className="w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-sm text-slate-300 hover:bg-white/10 transition"
-                >
-
-                    <div className="flex items-center gap-3">
-
-                        {dark ? (
-                            <svg className="size-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                                <circle cx="12" cy="12" r="4" />
-                                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
-                            </svg>
-                        ) : (
-                            <svg className="size-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                                <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
-                            </svg>
-                        )}
-
-                        <span>
-                            {dark ? 'Light mode' : 'Dark mode'}
+            <div className="relative px-4 pb-5">
+                <div className="rounded-3xl border border-white/8 bg-white/4 p-4 mb-3">
+                    <div className="flex items-center gap-2">
+                        <span className="relative flex size-2">
+                            <span className="absolute inline-flex size-full rounded-full bg-emerald-400 opacity-40 animate-ping" />
+                            <span className="relative inline-flex size-2 rounded-full bg-emerald-400" />
                         </span>
 
+                        <p className="text-xs font-medium text-slate-300">System Online</p>
                     </div>
 
-                    <div className={`w-10 h-5 rounded-full relative transition-all ${dark ? 'bg-blue-500' : 'bg-slate-600'}`}>
-
-                        <div
-                            className={`absolute top-0.5 size-4 rounded-full bg-white shadow transition-all duration-300 ${dark ? 'left-5' : 'left-0.5'
-                                }`}
-                        />
-
-                    </div>
-
-                </button>
-
-                <div className="my-2 border-t border-white/10" />
+                    <p className="text-[10px] text-slate-600 mt-1.5">DriveEase management services are active.</p>
+                </div>
 
                 <button
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm text-slate-400 hover:text-red-300 hover:bg-red-500/10 transition"
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm text-slate-500 hover:text-rose-300 hover:bg-rose-500/8 transition"
                 >
-                    <svg
-                        className="size-5"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth={1.8}
-                        viewBox="0 0 24 24"
-                    >
+                    <svg className="size-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                         <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
                         <path d="M16 17l5-5-5-5M21 12H9" />
                     </svg>
-
-                    <span>Sign out</span>
-
+                    <span>Sign Out</span>
                 </button>
-
             </div>
-
         </div>
     )
 }
