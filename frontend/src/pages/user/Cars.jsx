@@ -18,7 +18,7 @@ const CarSlider = ({ car }) => {
             <div className="h-52 bg-slate-100 flex items-center justify-center">
 
                 <svg
-                    className="w-16 h-16 text-slate-300"
+                    className="size-16 text-slate-300"
                     fill="none"
                     stroke="currentColor"
                     strokeWidth={1.2}
@@ -69,7 +69,7 @@ const CarSlider = ({ car }) => {
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
 
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/20 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-t from-slate-950/20 via-transparent to-transparent" />
 
             <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-white/95 text-emerald-600 text-[11px] font-semibold shadow-sm">
                 Available
@@ -80,30 +80,18 @@ const CarSlider = ({ car }) => {
 
                     <button
                         onClick={prev}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-950/40 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-slate-950/60 transition"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 size-8 rounded-full bg-slate-950/40 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-slate-950/60 transition"
                     >
-                        <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth={2.5}
-                            viewBox="0 0 24 24"
-                        >
+                        <svg className="size-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                             <path d="M15 18l-6-6 6-6" />
                         </svg>
                     </button>
 
                     <button
                         onClick={next}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-950/40 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-slate-950/60 transition"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 size-8 rounded-full bg-slate-950/40 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-slate-950/60 transition"
                     >
-                        <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth={2.5}
-                            viewBox="0 0 24 24"
-                        >
+                        <svg className="size-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                             <path d="M9 18l6-6-6-6" />
                         </svg>
                     </button>
@@ -118,8 +106,8 @@ const CarSlider = ({ car }) => {
                                     setCurrent(i)
                                 }}
                                 className={`h-1.5 rounded-full transition-all ${i === index
-                                    ? 'w-5 bg-white'
-                                    : 'w-1.5 bg-white/60'
+                                        ? 'w-5 bg-white'
+                                        : 'w-1.5 bg-white/60'
                                     }`}
                             />
                         ))}
@@ -332,10 +320,7 @@ export default function UserCars() {
         setSliderMin(
             Math.max(
                 minPrice,
-                Math.min(
-                    Number(value),
-                    sliderMax - 1
-                )
+                Math.min(Number(value), sliderMax - 1)
             )
         )
     }
@@ -344,10 +329,7 @@ export default function UserCars() {
         setSliderMax(
             Math.min(
                 maxPrice,
-                Math.max(
-                    Number(value),
-                    sliderMin + 1
-                )
+                Math.max(Number(value), sliderMin + 1)
             )
         )
     }
@@ -431,8 +413,7 @@ export default function UserCars() {
     return (
         <div className="bg-[#f5f8fc] min-h-screen pb-12">
 
-            {/* Hero */}
-            <section className="relative min-h-[430px] overflow-hidden bg-[#07111f]">
+            <section className="relative min-h-430px overflow-hidden bg-[#07111f]">
 
                 <div className="absolute top-0 right-0 w-full lg:w-[68%] h-full">
 
@@ -444,18 +425,18 @@ export default function UserCars() {
                                 e.currentTarget.src = cars[0].imageUrl
                             }
                         }}
-                        className="w-full h-full object-contain object-right-bottom"
+                        className="w-full h-full object-contain object-bottom-right"
                     />
 
                 </div>
 
-                <div className="absolute inset-0 bg-gradient-to-r from-[#07111f] via-[#0a1d33]/95 via-45% to-[#102d4c]/20" />
+                <div className="absolute inset-0 bg-linear-to-r from-[#07111f] via-[#0a1d33]/95 via-45% to-[#102d4c]/20" />
 
-                <div className="absolute inset-0 bg-gradient-to-t from-[#07111f]/40 via-transparent to-[#0c2847]/10" />
+                <div className="absolute inset-0 bg-linear-to-t from-[#07111f]/40 via-transparent to-[#0c2847]/10" />
 
-                <div className="absolute -top-36 left-[40%] w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
+                <div className="absolute -top-36 left-[40%] size-96 bg-blue-500/10 rounded-full blur-3xl" />
 
-                <div className="relative max-w-[1500px] mx-auto px-5 md:px-8 py-16 min-h-[430px] flex items-center">
+                <div className="relative max-w-1500px mx-auto px-5 md:px-8 py-16 min-h-430px flex items-center">
 
                     <div className="max-w-2xl">
 
@@ -467,7 +448,7 @@ export default function UserCars() {
 
                             Rent Your
 
-                            <span className="bg-gradient-to-r from-sky-400 to-cyan-300 bg-clip-text text-transparent">
+                            <span className="bg-linear-to-r from-sky-400 to-cyan-300 bg-clip-text text-transparent">
                                 {' '}Perfect Car
                             </span>
 
@@ -481,15 +462,9 @@ export default function UserCars() {
 
                             <div className="flex items-center gap-3">
 
-                                <div className="w-11 h-11 rounded-xl bg-white/[0.08] border border-white/10 flex items-center justify-center text-sky-400 backdrop-blur-sm">
+                                <div className="size-11 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-sky-400 backdrop-blur-sm">
 
-                                    <svg
-                                        className="w-5 h-5"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth={1.8}
-                                        viewBox="0 0 24 24"
-                                    >
+                                    <svg className="size-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                                         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                                         <path d="M9 12l2 2 4-4" />
                                     </svg>
@@ -510,15 +485,9 @@ export default function UserCars() {
 
                             <div className="flex items-center gap-3">
 
-                                <div className="w-11 h-11 rounded-xl bg-white/[0.08] border border-white/10 flex items-center justify-center text-sky-400 backdrop-blur-sm">
+                                <div className="size-11 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-sky-400 backdrop-blur-sm">
 
-                                    <svg
-                                        className="w-5 h-5"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth={1.8}
-                                        viewBox="0 0 24 24"
-                                    >
+                                    <svg className="size-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                                         <circle cx="12" cy="12" r="9" />
                                         <path d="M12 8v4l3 2" />
                                     </svg>
@@ -539,15 +508,9 @@ export default function UserCars() {
 
                             <div className="flex items-center gap-3">
 
-                                <div className="w-11 h-11 rounded-xl bg-white/[0.08] border border-white/10 flex items-center justify-center text-sky-400 backdrop-blur-sm">
+                                <div className="size-11 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-sky-400 backdrop-blur-sm">
 
-                                    <svg
-                                        className="w-5 h-5"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth={1.8}
-                                        viewBox="0 0 24 24"
-                                    >
+                                    <svg className="size-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                                         <path d="M20 7h-9M14 17H5M17 4l3 3-3 3M8 14l-3 3 3 3" />
                                     </svg>
 
@@ -573,19 +536,18 @@ export default function UserCars() {
 
             </section>
 
-            <div className="max-w-[1500px] mx-auto px-5 md:px-8">
+            <div className="max-w-1500px mx-auto px-5 md:px-8">
 
-                {/* Search */}
                 <section className="relative -mt-10 z-20">
 
-                    <div className="bg-white rounded-2xl shadow-[0_20px_50px_rgba(15,23,42,0.12)] border border-slate-200/70 p-4 md:p-5">
+                    <div className="bg-white rounded-2xl shadow-xl border border-slate-200/70 p-4 md:p-5">
 
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[1.4fr_1fr_1fr_auto] gap-3">
 
                             <div className="relative">
 
                                 <svg
-                                    className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"
+                                    className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-slate-400"
                                     fill="none"
                                     stroke="currentColor"
                                     strokeWidth={2}
@@ -637,21 +599,13 @@ export default function UserCars() {
 
                             <button
                                 onClick={() => setFiltersOpen(prev => !prev)}
-                                className="h-12 px-7 rounded-xl bg-gradient-to-r from-[#2563eb] via-[#1687f8] to-[#0ea5e9] text-white text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/25 hover:-translate-y-0.5 transition-all"
+                                className="h-12 px-7 rounded-xl bg-linear-to-r from-[#2563eb] via-[#1687f8] to-[#0ea5e9] text-white text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 hover:-translate-y-0.5 transition-all"
                             >
-
-                                <svg
-                                    className="w-4 h-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth={2}
-                                    viewBox="0 0 24 24"
-                                >
+                                <svg className="size-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                                     <path d="M3 6h18M6 12h12M10 18h4" />
                                 </svg>
 
                                 Filters
-
                             </button>
 
                         </div>
@@ -666,7 +620,6 @@ export default function UserCars() {
                     </div>
                 )}
 
-                {/* Categories */}
                 <section className="mt-9 flex items-center justify-between gap-5 flex-wrap">
 
                     <div className="flex gap-2 overflow-x-auto">
@@ -676,8 +629,8 @@ export default function UserCars() {
                                 key={category}
                                 onClick={() => setCategoryFilter(category)}
                                 className={`px-5 py-2.5 rounded-full border text-sm font-medium transition-all ${categoryFilter === category
-                                    ? 'bg-gradient-to-r from-blue-600 to-sky-500 border-transparent text-white shadow-md shadow-blue-500/15'
-                                    : 'bg-white border-slate-200 text-slate-600 hover:border-sky-400 hover:text-sky-600'
+                                        ? 'bg-linear-to-r from-blue-600 to-sky-500 border-transparent text-white shadow-md shadow-blue-500/15'
+                                        : 'bg-white border-slate-200 text-slate-600 hover:border-sky-400 hover:text-sky-600'
                                     }`}
                             >
                                 {category === 'all' ? 'All Cars' : category}
@@ -811,7 +764,6 @@ export default function UserCars() {
                     </section>
                 )}
 
-                {/* Cars */}
                 <section id="popular-cars" className="mt-11">
 
                     <div className="flex items-end justify-between gap-5">
@@ -844,7 +796,7 @@ export default function UserCars() {
                     {loading ? (
                         <div className="flex items-center justify-center py-24 gap-3">
 
-                            <div className="w-7 h-7 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                            <div className="size-7 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
 
                             <span className="text-sm text-slate-500">
                                 Loading cars...
@@ -864,7 +816,7 @@ export default function UserCars() {
 
                             <button
                                 onClick={resetFilters}
-                                className="mt-4 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-sky-500 text-white text-sm font-medium"
+                                className="mt-4 px-5 py-2.5 rounded-xl bg-linear-to-r from-blue-600 to-sky-500 text-white text-sm font-medium"
                             >
                                 Reset Filters
                             </button>
@@ -876,7 +828,7 @@ export default function UserCars() {
                             {filtered.map(car => (
                                 <div
                                     key={car.id}
-                                    className="group bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm hover:shadow-xl hover:shadow-slate-200/70 hover:-translate-y-1 transition-all duration-300"
+                                    className="group bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
                                 >
 
                                     <CarSlider car={car} />
@@ -919,7 +871,7 @@ export default function UserCars() {
                                                 <DetailBadge
                                                     label={car.year}
                                                     icon={
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                                                        <svg className="size-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                                                             <rect x="3" y="4" width="18" height="18" rx="2" />
                                                             <path d="M16 2v4M8 2v4M3 10h18" />
                                                         </svg>
@@ -931,7 +883,7 @@ export default function UserCars() {
                                                 <DetailBadge
                                                     label={car.transmission}
                                                     icon={
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                                                        <svg className="size-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                                                             <circle cx="5" cy="12" r="2" />
                                                             <circle cx="19" cy="5" r="2" />
                                                             <circle cx="19" cy="19" r="2" />
@@ -945,7 +897,7 @@ export default function UserCars() {
                                                 <DetailBadge
                                                     label={car.fuelType}
                                                     icon={
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                                                        <svg className="size-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                                                             <path d="M3 22V8l6-6h6l2 2v2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2v6" />
                                                         </svg>
                                                     }
@@ -956,7 +908,7 @@ export default function UserCars() {
                                                 <DetailBadge
                                                     label={car.mileage}
                                                     icon={
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                                                        <svg className="size-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                                                             <circle cx="12" cy="12" r="9" />
                                                             <path d="M12 7v5l3 2" />
                                                         </svg>
@@ -977,18 +929,12 @@ export default function UserCars() {
 
                                                 setBookingError('')
                                             }}
-                                            className="w-full h-11 mt-5 rounded-xl bg-gradient-to-r from-[#2563eb] via-[#1687f8] to-[#0ea5e9] text-white text-sm font-semibold flex items-center justify-center gap-2 shadow-md shadow-blue-500/15 hover:shadow-lg hover:shadow-blue-500/25 hover:-translate-y-0.5 transition-all"
+                                            className="w-full h-11 mt-5 rounded-xl bg-linear-to-r from-[#2563eb] via-[#1687f8] to-[#0ea5e9] text-white text-sm font-semibold flex items-center justify-center gap-2 shadow-md shadow-blue-500/15 hover:-translate-y-0.5 transition-all"
                                         >
 
                                             View Details
 
-                                            <svg
-                                                className="w-4 h-4 transition-transform group-hover:translate-x-1"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth={2}
-                                                viewBox="0 0 24 24"
-                                            >
+                                            <svg className="size-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                                                 <path d="M5 12h14M13 6l6 6-6 6" />
                                             </svg>
 
@@ -1004,8 +950,7 @@ export default function UserCars() {
 
                 </section>
 
-                {/* Banner */}
-                <section className="mt-12 overflow-hidden rounded-2xl bg-gradient-to-r from-[#08172a] via-[#0d2c4d] to-[#164b72] shadow-lg">
+                <section className="mt-12 overflow-hidden rounded-2xl bg-linear-to-r from-[#08172a] via-[#0d2c4d] to-[#164b72] shadow-lg">
 
                     <div className="px-7 py-7 md:px-10 flex items-center justify-between gap-5 flex-wrap">
 
@@ -1035,7 +980,6 @@ export default function UserCars() {
 
                 </section>
 
-                {/* Booking modal */}
                 {bookingModal && (
                     <div className="fixed inset-0 bg-slate-950/65 backdrop-blur-sm z-50 flex items-center justify-center p-4">
 
@@ -1050,22 +994,16 @@ export default function UserCars() {
                                         className="w-full h-full object-cover"
                                     />
 
-                                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 to-transparent" />
+                                    <div className="absolute inset-0 bg-linear-to-t from-slate-950/80 to-transparent" />
 
                                     <button
                                         onClick={() => {
                                             setBookingModal(null)
                                             setBookingError('')
                                         }}
-                                        className="absolute top-4 right-4 w-9 h-9 rounded-full bg-slate-950/50 text-white flex items-center justify-center hover:bg-slate-950/70"
+                                        className="absolute top-4 right-4 size-9 rounded-full bg-slate-950/50 text-white flex items-center justify-center hover:bg-slate-950/70"
                                     >
-                                        <svg
-                                            className="w-4 h-4"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth={2}
-                                            viewBox="0 0 24 24"
-                                        >
+                                        <svg className="size-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                                             <path d="M18 6L6 18M6 6l12 12" />
                                         </svg>
                                     </button>
@@ -1112,7 +1050,6 @@ export default function UserCars() {
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
 
                                     <div>
-
                                         <label className={labelClass}>
                                             Pickup Date
                                         </label>
@@ -1128,11 +1065,9 @@ export default function UserCars() {
                                             }
                                             className={selectClass}
                                         />
-
                                     </div>
 
                                     <div>
-
                                         <label className={labelClass}>
                                             Return Date
                                         </label>
@@ -1148,7 +1083,6 @@ export default function UserCars() {
                                             }
                                             className={selectClass}
                                         />
-
                                     </div>
 
                                 </div>
@@ -1158,6 +1092,7 @@ export default function UserCars() {
 
                                         <div className="flex justify-between text-sm text-slate-500">
                                             <span>Rental Duration</span>
+
                                             <span>
                                                 {bookingDays} {bookingDays === 1 ? 'day' : 'days'}
                                             </span>
@@ -1198,16 +1133,12 @@ export default function UserCars() {
 
                                     <button
                                         onClick={handleBook}
-                                        className="h-11 rounded-xl bg-gradient-to-r from-[#2563eb] via-[#1687f8] to-[#0ea5e9] text-white text-sm font-semibold shadow-md shadow-blue-500/20 hover:shadow-lg transition"
+                                        className="h-11 rounded-xl bg-linear-to-r from-[#2563eb] via-[#1687f8] to-[#0ea5e9] text-white text-sm font-semibold shadow-md shadow-blue-500/20"
                                     >
                                         Send Request
                                     </button>
 
                                 </div>
-
-                                <p className="text-center text-[11px] text-slate-400 mt-4">
-                                    Your booking request will be sent to admin for approval.
-                                </p>
 
                             </div>
 

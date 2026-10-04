@@ -1,237 +1,846 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import API from '../../api/axios'
-import { useAuth } from '../../context/AuthContext'
 
-const Pagination = ({ page, totalPages, setPage }) => {
-    if (totalPages <= 1) return null
-    const pages = Array.from({ length: totalPages }, (_, i) => i + 1)
-        .filter(n => n === 1 || n === totalPages || Math.abs(n - page) <= 1)
-        .reduce((acc, n, i, arr) => {
-            if (i > 0 && n - arr[i - 1] > 1) acc.push('...')
-            acc.push(n)
-            return acc
-        }, [])
+function formatDate(value) {
+    if (!value) return '-'
+
+    const date = new Date(value)
+
+    if (Number.isNaN(date.getTime())) return '-'
+
+    return date.toLocaleDateString('en-US', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+    })
+}
+
+function getStatusText(status) {
+    const value = String(status || 'pending').toLowerCase()
+
+    if (value === 'approved') return 'Approved'
+    if (value === 'rejected') return 'Rejected'
+    if (value === 'completed') return 'Completed'
+    if (value === 'cancelled') return 'Cancelled'
+
+    return 'Pending'
+}
+
+function getStatusClass(status) {
+    const value = String(status || '').toLowerCase()
+
+    if (value === 'approved') {
+        return 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+    }
+
+    if (value === 'rejected') {
+        return 'bg-red-50 text-red-600 border border-red-100'
+    }
+
+    if (value === 'completed') {
+        return 'bg-blue-50 text-blue-600 border border-blue-100'
+    }
+
+    if (value === 'cancelled') {
+        return 'bg-slate-100 text-slate-500 border border-slate-200'
+    }
+
+    return 'bg-amber-50 text-amber-600 border border-amber-100'
+}
+
+function getBookingId(booking) {
+    return booking?.id || booking?._id || '-'
+}
+
+function getCarId(booking) {
+    return booking?.carId || booking?.car?.id || booking?.car?._id || '-'
+}
+
+function getCarName(booking) {
+    const brand = booking?.car?.brand || booking?.brand || ''
+    const model = booking?.car?.model || booking?.model || ''
+
+    const name = `${brand} ${model}`.trim()
+
+    if (name) return name
+    if (booking?.carName) return booking.carName
+
+    return `Car #${getCarId(booking)}`
+}
+
+function getCarImage(booking) {
     return (
-        <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
-            <span className="text-xs text-slate-400 dark:text-slate-500">Page {page} of {totalPages}</span>
-            <div className="flex items-center gap-1">
-                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-                    className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /></svg>
-                </button>
-                {pages.map((n, i) => n === '...' ? (
-                    <span key={`dot-${i}`} className="w-8 h-8 flex items-center justify-center text-xs text-slate-400">...</span>
-                ) : (
-                    <button key={n} onClick={() => setPage(n)}
-                        className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors cursor-pointer ${page === n ? 'bg-blue-700 text-white border border-blue-700' : 'border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
-                            }`}>
-                        {n}
-                    </button>
-                ))}
-                <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-                    className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer">
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" /></svg>
-                </button>
+        booking?.car?.imageUrl ||
+        booking?.imageUrl ||
+        booking?.carImage ||
+        ''
+    )
+}
+
+function getLocation(booking) {
+    const city = booking?.car?.city || booking?.city || ''
+    const country = booking?.car?.country || booking?.country || ''
+
+    const location = [city, country].filter(Boolean).join(', ')
+
+    return location || 'Location not available'
+}
+
+function getTotal(booking) {
+    const value =
+        booking?.total ??
+        booking?.totalAmount ??
+        booking?.amount ??
+        booking?.price ??
+        0
+
+    return Number(value) || 0
+}
+
+function getDays(startDate, endDate) {
+    if (!startDate || !endDate) return 0
+
+    const start = new Date(startDate)
+    const end = new Date(endDate)
+
+    if (
+        Number.isNaN(start.getTime()) ||
+        Number.isNaN(end.getTime())
+    ) {
+        return 0
+    }
+
+    const difference = end.getTime() - start.getTime()
+
+    const days = Math.ceil(
+        difference / (1000 * 60 * 60 * 24)
+    )
+
+    return days > 0 ? days : 0
+}
+
+function EmptyState({ onBrowse }) {
+    return (
+        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm px-6 py-16 text-center">
+
+            <div className="size-20 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto">
+
+                <svg
+                    className="size-10"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={1.8}
+                    viewBox="0 0 24 24"
+                >
+                    <rect x="3" y="4" width="18" height="18" rx="2" />
+                    <path d="M16 2v4M8 2v4M3 10h18" />
+                </svg>
+
             </div>
+
+            <h3 className="text-2xl font-bold text-[#0b1b30] mt-6">
+                No bookings yet
+            </h3>
+
+            <p className="text-slate-500 text-sm mt-2 max-w-md mx-auto leading-6">
+                You have not made any booking requests yet. Browse available cars and send your first booking request.
+            </p>
+
+            <button
+                onClick={onBrowse}
+                className="mt-6 px-6 h-12 rounded-xl bg-linear-to-r from-[#2563eb] via-[#1687f8] to-[#0ea5e9] text-white text-sm font-semibold shadow-md shadow-blue-500/20"
+            >
+                Browse Cars
+            </button>
+
         </div>
     )
 }
 
 export default function UserBookings() {
-    const { user } = useAuth()
+    const navigate = useNavigate()
+
     const [bookings, setBookings] = useState([])
     const [loading, setLoading] = useState(true)
-    const [error, setError] = useState('')
-    const [msg, setMsg] = useState('')
-    const [cancelModel, setCancelModel] = useState(null)
-    const [rowLimit, setRowLimit] = useState(5)
-    const [page, setPage] = useState(1)
+
+    const [searchTerm, setSearchTerm] = useState('')
+    const [statusFilter, setStatusFilter] = useState('all')
+
+    const [rowsPerPage, setRowsPerPage] = useState(5)
+    const [currentPage, setCurrentPage] = useState(1)
+
+    const [selectedBooking, setSelectedBooking] = useState(null)
 
     useEffect(() => {
-        if (!user?.id) return
+        API.get('/myBookings')
+            .then(response => {
+                const data = Array.isArray(response.data)
+                    ? response.data
+                    : response.data?.bookings || []
 
-        const fetchBookings = () => {
-            setLoading(true)
-            setError('')
-            API.get(`/getBookingsByUser/${user?.id}`)
-                .then(r => setBookings(Array.isArray(r.data) ? r.data : []))
-                .catch(() => setError('Failed to load bookings. Please try again'))
-                .finally(() => setLoading(false))
+                setBookings(data)
+            })
+            .catch(error => {
+                console.log(error)
+                setBookings([])
+            })
+            .finally(() => {
+                setLoading(false)
+            })
+    }, [])
+
+    const stats = useMemo(() => {
+        const total = bookings.length
+
+        const pending = bookings.filter(
+            booking => getStatusText(booking.status) === 'Pending'
+        ).length
+
+        const approved = bookings.filter(
+            booking => getStatusText(booking.status) === 'Approved'
+        ).length
+
+        const completed = bookings.filter(
+            booking => getStatusText(booking.status) === 'Completed'
+        ).length
+
+        return {
+            total,
+            pending,
+            approved,
+            completed
+        }
+    }, [bookings])
+
+    const filteredBookings = useMemo(() => {
+        let list = [...bookings]
+
+        if (statusFilter !== 'all') {
+            list = list.filter(
+                booking =>
+                    getStatusText(booking.status).toLowerCase() === statusFilter
+            )
         }
 
-        fetchBookings()
+        if (searchTerm.trim()) {
+            const search = searchTerm.toLowerCase()
 
-    }, [user?.id]);
+            list = list.filter(booking => {
+                const text = `
+                    ${getBookingId(booking)}
+                    ${getCarId(booking)}
+                    ${getCarName(booking)}
+                    ${getLocation(booking)}
+                    ${getStatusText(booking.status)}
+                `.toLowerCase()
 
-    const totalPages = Math.ceil(bookings.length / rowLimit) || 1
-    const paginated = bookings.slice((page - 1) * rowLimit, page * rowLimit)
-    const handleLimitChange = (val) => { setRowLimit(Number(val)); setPage(1) }
-
-    const handleCancel = async () => {
-        try {
-            await API.delete(`/cancelBooking/${cancelModel}`);
-            setCancelModel(null)
-
-            setLoading(true)
-            API.get(`/getBookingsByUser/${user?.id}`)
-                .then(r => setBookings(Array.isArray(r.data) ? r.data : []))
-                .catch(() => setError('Failed to refresh bookings'))
-                .finally(() => setLoading(false))
-            setMsg('Booking cancelled')
-            setTimeout(() => setMsg(''), 3000)
+                return text.includes(search)
+            })
         }
-        catch { setMsg('Failed to cancel booking') }
-        setTimeout(() => setMsg(''), 3000)
-    };
 
-    const statusStyle = (s) => ({
-        confirmed: 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400',
-        pending: 'bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400',
-        cancelled: 'bg-red-50 dark:bg-red-900/40 text-red-600 dark:text-red-400',
-    }[s] || 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400')
+        return list
+    }, [bookings, searchTerm, statusFilter])
+
+    const totalPages = Math.max(
+        1,
+        Math.ceil(filteredBookings.length / rowsPerPage)
+    )
+
+    const safePage = Math.min(currentPage, totalPages)
+
+    const paginatedBookings = useMemo(() => {
+        const start = (safePage - 1) * rowsPerPage
+        const end = start + rowsPerPage
+
+        return filteredBookings.slice(start, end)
+
+    }, [filteredBookings, rowsPerPage, safePage])
+
+    const statusTabs = [
+        { key: 'all', label: 'All' },
+        { key: 'pending', label: 'Pending' },
+        { key: 'approved', label: 'Approved' },
+        { key: 'completed', label: 'Completed' }
+    ]
 
     return (
-        <div className="p-4 md:p-8 min-h-screen">
-            <div className="mb-8">
-                <h1 className="text-2xl font-semibold text-slate-800 dark:text-slate-100" style={{ fontFamily: 'Outfit,sans-serif' }}>
-                    My bookings
-                </h1>
-                <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-                    Track your rental history
-                </p>
-            </div>
+        <div className="bg-[#f5f8fc] min-h-screen pb-12">
 
-            {msg && (
-                <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 rounded-xl text-sm">
-                    {msg}
-                </div>
-            )}
+            <div className="max-w-1500px mx-auto px-5 md:px-8 py-8">
 
-            {error && (
-                <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-600 dark:text-red-400 rounded-xl text-sm">
-                    {error}
-                </div>
-            )}
+                <section className="relative overflow-hidden rounded-3xl bg-linear-to-r from-[#08172a] via-[#0d2c4d] to-[#164b72] px-6 py-8 md:px-10 md:py-10 shadow-lg">
 
-            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
-                <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
+                    <div className="absolute top-0 right-0 size-72 bg-white/5 rounded-full blur-3xl" />
 
-                    <div>
-                        <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100" style={{ fontFamily: 'Outfit,sans-serif' }}>Bookings</h2>
-                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Showing {paginated.length} of {bookings.length} bookings</p>
+                    <div className="absolute -bottom-16 left-1/3 size-72 bg-sky-400/10 rounded-full blur-3xl" />
+
+                    <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+
+                        <div>
+
+                            <p className="text-sky-300 text-xs font-semibold tracking-[0.24em] uppercase mb-3">
+                                Track • Manage • Review
+                            </p>
+
+                            <h1 className="text-3xl md:text-5xl font-bold text-white">
+                                My Bookings
+                            </h1>
+
+                            <p className="text-slate-200 text-sm md:text-base mt-3 max-w-2xl leading-7">
+                                Review your booking history and track every rental request in one place.
+                            </p>
+
+                        </div>
+
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full lg:w-auto">
+
+                            <div className="bg-white/10 border border-white/10 rounded-2xl px-4 py-4 min-w-130px">
+
+                                <p className="text-white text-2xl font-bold">
+                                    {stats.total}
+                                </p>
+
+                                <p className="text-slate-300 text-xs mt-1">
+                                    Total
+                                </p>
+
+                            </div>
+
+                            <div className="bg-white/10 border border-white/10 rounded-2xl px-4 py-4 min-w-130px">
+
+                                <p className="text-white text-2xl font-bold">
+                                    {stats.pending}
+                                </p>
+
+                                <p className="text-slate-300 text-xs mt-1">
+                                    Pending
+                                </p>
+
+                            </div>
+
+                            <div className="bg-white/10 border border-white/10 rounded-2xl px-4 py-4 min-w-130px">
+
+                                <p className="text-white text-2xl font-bold">
+                                    {stats.approved}
+                                </p>
+
+                                <p className="text-slate-300 text-xs mt-1">
+                                    Approved
+                                </p>
+
+                            </div>
+
+                            <div className="bg-white/10 border border-white/10 rounded-2xl px-4 py-4 min-w-130px">
+
+                                <p className="text-white text-2xl font-bold">
+                                    {stats.completed}
+                                </p>
+
+                                <p className="text-slate-300 text-xs mt-1">
+                                    Completed
+                                </p>
+
+                            </div>
+
+                        </div>
+
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        <span className="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap">Rows per page</span>
-                        <select
-                            value={rowLimit}
-                            onChange={e => handleLimitChange(e.target.value)}
-                            className="text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500 cursor-pointer"
-                        >
-                            {[5, 10, 20, 25, 50].map(n => <option key={n} value={n}>{n}</option>)}
-                        </select>
-                    </div>
-                </div>
+                </section>
 
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                        <thead>
-                            <tr className="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80">
-                                {['Booking ID', 'Car ID', 'Start date', 'End date', 'Total', 'Status', 'Actions'].map(h => (
-                                    <th key={h} className="text-left px-6 py-3.5 text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {loading ? (
-                                <tr>
-                                    <td colSpan={7} className="text-center py-16">
-                                        <div className="flex flex-col items-center gap-3">
-                                            <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                                            <span className="text-slate-400 dark:text-slate-500 text-sm">
-                                                Loading bookings...
-                                            </span>
+                <section className="relative -mt-6 z-20">
+
+                    <div className="bg-white rounded-3xl border border-slate-200 shadow-xl p-4 md:p-5">
+
+                        <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
+
+                            <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1.3fr_auto] gap-3">
+
+                                <div className="relative">
+
+                                    <svg
+                                        className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-slate-400"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth={2}
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <circle cx="11" cy="11" r="8" />
+                                        <path d="M21 21l-4.35-4.35" />
+                                    </svg>
+
+                                    <input
+                                        type="text"
+                                        value={searchTerm}
+                                        onChange={e => {
+                                            setSearchTerm(e.target.value)
+                                            setCurrentPage(1)
+                                        }}
+                                        placeholder="Search booking or car"
+                                        className="w-full h-12 pl-12 pr-4 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-700 outline-none focus:border-sky-500"
+                                    />
+
+                                </div>
+
+                                <div className="flex gap-2 overflow-x-auto">
+
+                                    {statusTabs.map(tab => (
+                                        <button
+                                            key={tab.key}
+                                            onClick={() => {
+                                                setStatusFilter(tab.key)
+                                                setCurrentPage(1)
+                                            }}
+                                            className={`h-12 px-5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${statusFilter === tab.key
+                                                    ? 'bg-linear-to-r from-[#2563eb] to-[#0ea5e9] text-white shadow-md shadow-blue-500/20'
+                                                    : 'bg-white border border-slate-200 text-slate-600 hover:border-sky-400'
+                                                }`}
+                                        >
+                                            {tab.label}
+                                        </button>
+                                    ))}
+
+                                </div>
+
+                            </div>
+
+                            <div className="flex items-center gap-3">
+
+                                <span className="text-sm text-slate-500">
+                                    Rows
+                                </span>
+
+                                <select
+                                    value={rowsPerPage}
+                                    onChange={e => {
+                                        setRowsPerPage(Number(e.target.value))
+                                        setCurrentPage(1)
+                                    }}
+                                    className="h-11 px-4 rounded-xl border border-slate-200 bg-white text-sm text-slate-700 outline-none focus:border-sky-500"
+                                >
+                                    <option value={5}>5</option>
+                                    <option value={10}>10</option>
+                                    <option value={15}>15</option>
+                                </select>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+                <section className="mt-8">
+
+                    {loading ? (
+                        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm py-24 flex items-center justify-center gap-3">
+
+                            <div className="size-7 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+
+                            <span className="text-sm text-slate-500">
+                                Loading bookings...
+                            </span>
+
+                        </div>
+                    ) : filteredBookings.length === 0 ? (
+                        <EmptyState onBrowse={() => navigate('/dashboard/cars')} />
+                    ) : (
+                        <>
+
+                            <div className="hidden xl:block bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+
+                                <div className="px-6 py-5 border-b border-slate-100">
+
+                                    <h2 className="text-xl font-bold text-[#0b1b30]">
+                                        Booking History
+                                    </h2>
+
+                                    <p className="text-sm text-slate-500 mt-1">
+                                        Showing {paginatedBookings.length} of {filteredBookings.length} bookings
+                                    </p>
+
+                                </div>
+
+                                <div className="overflow-x-auto">
+
+                                    <table className="w-full">
+
+                                        <thead className="bg-slate-50">
+
+                                            <tr>
+                                                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase">
+                                                    Booking
+                                                </th>
+
+                                                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase">
+                                                    Car
+                                                </th>
+
+                                                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase">
+                                                    Dates
+                                                </th>
+
+                                                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase">
+                                                    Days
+                                                </th>
+
+                                                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase">
+                                                    Total
+                                                </th>
+
+                                                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase">
+                                                    Status
+                                                </th>
+
+                                                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase">
+                                                    Action
+                                                </th>
+                                            </tr>
+
+                                        </thead>
+
+                                        <tbody>
+
+                                            {paginatedBookings.map((booking, index) => (
+                                                <tr
+                                                    key={`${getBookingId(booking)}-${index}`}
+                                                    className="border-t border-slate-100"
+                                                >
+
+                                                    <td className="px-6 py-5">
+
+                                                        <p className="text-sm font-semibold text-[#0b1b30]">
+                                                            #{getBookingId(booking)}
+                                                        </p>
+
+                                                        <p className="text-xs text-slate-400 mt-1">
+                                                            Car ID: {getCarId(booking)}
+                                                        </p>
+
+                                                    </td>
+
+                                                    <td className="px-6 py-5">
+
+                                                        <div className="flex items-center gap-3">
+
+                                                            <div className="size-14 rounded-xl bg-slate-100 overflow-hidden shrink-0">
+
+                                                                {getCarImage(booking) ? (
+                                                                    <img
+                                                                        src={getCarImage(booking)}
+                                                                        alt={getCarName(booking)}
+                                                                        className="size-full object-cover"
+                                                                    />
+                                                                ) : (
+                                                                    <div className="size-full flex items-center justify-center text-slate-300">
+
+                                                                        <svg className="size-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                                                                            <path d="M5 17H3a2 2 0 01-2-2V9a2 2 0 012-2h1l2-3h10l2 3h1a2 2 0 012 2v6a2 2 0 01-2 2h-2" />
+                                                                            <circle cx="7" cy="17" r="2" />
+                                                                            <circle cx="17" cy="17" r="2" />
+                                                                        </svg>
+
+                                                                    </div>
+                                                                )}
+
+                                                            </div>
+
+                                                            <div>
+
+                                                                <p className="text-sm font-semibold text-[#0b1b30]">
+                                                                    {getCarName(booking)}
+                                                                </p>
+
+                                                                <p className="text-xs text-slate-400 mt-1">
+                                                                    {getLocation(booking)}
+                                                                </p>
+
+                                                            </div>
+
+                                                        </div>
+
+                                                    </td>
+
+                                                    <td className="px-6 py-5">
+
+                                                        <p className="text-sm text-slate-700">
+                                                            {formatDate(booking.startDate)}
+                                                        </p>
+
+                                                        <p className="text-xs text-slate-400 mt-1">
+                                                            to {formatDate(booking.endDate)}
+                                                        </p>
+
+                                                    </td>
+
+                                                    <td className="px-6 py-5 text-sm text-slate-700">
+                                                        {getDays(booking.startDate, booking.endDate)} days
+                                                    </td>
+
+                                                    <td className="px-6 py-5 text-sm font-bold text-blue-600">
+                                                        ${getTotal(booking).toLocaleString()}
+                                                    </td>
+
+                                                    <td className="px-6 py-5">
+
+                                                        <span className={`inline-flex px-3 py-1.5 rounded-full text-xs font-semibold ${getStatusClass(booking.status)}`}>
+                                                            {getStatusText(booking.status)}
+                                                        </span>
+
+                                                    </td>
+
+                                                    <td className="px-6 py-5">
+
+                                                        <button
+                                                            onClick={() => setSelectedBooking(booking)}
+                                                            className="h-10 px-4 rounded-xl bg-linear-to-r from-[#2563eb] to-[#0ea5e9] text-white text-sm font-semibold"
+                                                        >
+                                                            View
+                                                        </button>
+
+                                                    </td>
+
+                                                </tr>
+                                            ))}
+
+                                        </tbody>
+
+                                    </table>
+
+                                </div>
+
+                            </div>
+
+                            <div className="xl:hidden grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                                {paginatedBookings.map((booking, index) => (
+                                    <div
+                                        key={`${getBookingId(booking)}-${index}`}
+                                        className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5"
+                                    >
+
+                                        <div className="flex items-start gap-4">
+
+                                            <div className="size-20 rounded-2xl bg-slate-100 overflow-hidden shrink-0">
+
+                                                {getCarImage(booking) ? (
+                                                    <img
+                                                        src={getCarImage(booking)}
+                                                        alt={getCarName(booking)}
+                                                        className="size-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="size-full flex items-center justify-center text-slate-300">
+                                                        <svg className="size-7" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                                                            <path d="M5 17H3a2 2 0 01-2-2V9a2 2 0 012-2h1l2-3h10l2 3h1a2 2 0 012 2v6a2 2 0 01-2 2h-2" />
+                                                            <circle cx="7" cy="17" r="2" />
+                                                            <circle cx="17" cy="17" r="2" />
+                                                        </svg>
+                                                    </div>
+                                                )}
+
+                                            </div>
+
+                                            <div className="min-w-0 flex-1">
+
+                                                <p className="text-lg font-bold text-[#0b1b30]">
+                                                    {getCarName(booking)}
+                                                </p>
+
+                                                <p className="text-xs text-slate-400 mt-1">
+                                                    #{getBookingId(booking)}
+                                                </p>
+
+                                                <span className={`inline-flex mt-2 px-3 py-1.5 rounded-full text-xs font-semibold ${getStatusClass(booking.status)}`}>
+                                                    {getStatusText(booking.status)}
+                                                </span>
+
+                                            </div>
+
                                         </div>
-                                    </td>
-                                </tr>
-                            ) : paginated.length === 0 ? (
-                                <tr>
-                                    <td colSpan={7} className="text-center py-16">
-                                        <div className="flex flex-col items-center gap-3">
-                                            <div className="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center">
-                                                <svg className="w-6 h-6 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                                                    <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
-                                                </svg>
+
+                                        <div className="grid grid-cols-2 gap-4 mt-5 pt-5 border-t border-slate-100">
+
+                                            <div>
+                                                <p className="text-xs text-slate-400">
+                                                    Pickup
+                                                </p>
+
+                                                <p className="text-sm font-medium text-slate-700 mt-1">
+                                                    {formatDate(booking.startDate)}
+                                                </p>
                                             </div>
 
                                             <div>
-                                                <p className="text-slate-600 dark:text-slate-400 font-medium text-sm">No bookings yet</p>
-                                                <p className="text-slate-400 dark:text-slate-500 text-xs mt-0.5">Browse cars and make your first booking</p>
+                                                <p className="text-xs text-slate-400">
+                                                    Return
+                                                </p>
+
+                                                <p className="text-sm font-medium text-slate-700 mt-1">
+                                                    {formatDate(booking.endDate)}
+                                                </p>
                                             </div>
+
+                                            <div>
+                                                <p className="text-xs text-slate-400">
+                                                    Duration
+                                                </p>
+
+                                                <p className="text-sm font-medium text-slate-700 mt-1">
+                                                    {getDays(booking.startDate, booking.endDate)} days
+                                                </p>
+                                            </div>
+
+                                            <div>
+                                                <p className="text-xs text-slate-400">
+                                                    Total
+                                                </p>
+
+                                                <p className="text-sm font-bold text-blue-600 mt-1">
+                                                    ${getTotal(booking).toLocaleString()}
+                                                </p>
+                                            </div>
+
                                         </div>
-                                    </td>
-                                </tr>
-                            ) : paginated.map(b => (
-                                <tr key={b.id} className="border-b border-slate-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                                    <td className="px-6 py-4 font-mono text-xs text-slate-500 dark:text-slate-400">#{b.id}</td>
-                                    <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{b.carId}</td>
-                                    <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{b.startDate?.slice(0, 10)}</td>
-                                    <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{b.endDate?.slice(0, 10)}</td>
-                                    <td className="px-6 py-4 font-semibold text-slate-800 dark:text-slate-200">${Number(b.totalAmount || 0).toLocaleString()}</td>
-                                    <td className="px-6 py-4">
-                                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusStyle(b.status)}`}>{b.status}</span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        {b.status !== 'cancelled' && (
-                                            <button
-                                                onClick={() => setCancelModel(b.id)} className="px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-medium hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors cursor-pointer whitespace-nowrap border border-red-100 dark:border-red-800">
-                                                Cancel
-                                            </button>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-                <Pagination page={page} totalPages={totalPages} setPage={setPage} />
+
+                                        <button
+                                            onClick={() => setSelectedBooking(booking)}
+                                            className="w-full h-11 mt-5 rounded-xl bg-linear-to-r from-[#2563eb] to-[#0ea5e9] text-white text-sm font-semibold"
+                                        >
+                                            View Details
+                                        </button>
+
+                                    </div>
+                                ))}
+
+                            </div>
+
+                            <div className="flex items-center justify-between gap-4 flex-wrap mt-6">
+
+                                <p className="text-sm text-slate-500">
+                                    Page <span className="font-semibold text-slate-700">{safePage}</span> of{' '}
+                                    <span className="font-semibold text-slate-700">{totalPages}</span>
+                                </p>
+
+                                <div className="flex items-center gap-2">
+
+                                    <button
+                                        onClick={() => setCurrentPage(Math.max(safePage - 1, 1))}
+                                        disabled={safePage === 1}
+                                        className="h-11 px-4 rounded-xl border border-slate-200 bg-white text-slate-600 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        Previous
+                                    </button>
+
+                                    <button
+                                        onClick={() => setCurrentPage(Math.min(safePage + 1, totalPages))}
+                                        disabled={safePage === totalPages}
+                                        className="h-11 px-4 rounded-xl border border-slate-200 bg-white text-slate-600 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        Next
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </>
+                    )}
+
+                </section>
+
+                {selectedBooking && (
+                    <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+
+                        <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl">
+
+                            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+
+                                <div>
+                                    <p className="text-xs font-semibold uppercase text-blue-600">
+                                        Booking Details
+                                    </p>
+
+                                    <h3 className="text-2xl font-bold text-[#0b1b30] mt-1">
+                                        #{getBookingId(selectedBooking)}
+                                    </h3>
+                                </div>
+
+                                <button
+                                    onClick={() => setSelectedBooking(null)}
+                                    className="size-10 rounded-xl border border-slate-200 text-slate-500 flex items-center justify-center hover:bg-slate-50"
+                                >
+                                    <svg className="size-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                        <path d="M18 6L6 18M6 6l12 12" />
+                                    </svg>
+                                </button>
+
+                            </div>
+
+                            <div className="p-6">
+
+                                <h4 className="text-xl font-bold text-[#0b1b30]">
+                                    {getCarName(selectedBooking)}
+                                </h4>
+
+                                <p className="text-sm text-slate-500 mt-1">
+                                    {getLocation(selectedBooking)}
+                                </p>
+
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">
+
+                                    <div className="bg-slate-50 rounded-2xl p-4">
+                                        <p className="text-xs text-slate-400">Pickup</p>
+                                        <p className="text-sm font-semibold text-slate-700 mt-1">
+                                            {formatDate(selectedBooking.startDate)}
+                                        </p>
+                                    </div>
+
+                                    <div className="bg-slate-50 rounded-2xl p-4">
+                                        <p className="text-xs text-slate-400">Return</p>
+                                        <p className="text-sm font-semibold text-slate-700 mt-1">
+                                            {formatDate(selectedBooking.endDate)}
+                                        </p>
+                                    </div>
+
+                                    <div className="bg-slate-50 rounded-2xl p-4">
+                                        <p className="text-xs text-slate-400">Total</p>
+                                        <p className="text-sm font-bold text-blue-600 mt-1">
+                                            ${getTotal(selectedBooking).toLocaleString()}
+                                        </p>
+                                    </div>
+
+                                </div>
+
+                                <div className="flex justify-end gap-3 mt-6">
+
+                                    <button
+                                        onClick={() => setSelectedBooking(null)}
+                                        className="h-11 px-5 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium"
+                                    >
+                                        Close
+                                    </button>
+
+                                    <button
+                                        onClick={() => navigate('/dashboard/cars')}
+                                        className="h-11 px-5 rounded-xl bg-linear-to-r from-[#2563eb] to-[#0ea5e9] text-white text-sm font-semibold"
+                                    >
+                                        Browse Cars
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                )}
+
             </div>
 
-            {cancelModel && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl border border-slate-100 dark:border-slate-700">
-
-                        {/* Icon */}
-                        <div className="w-12 h-12 bg-red-50 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg className="w-6 h-6 text-red-500 dark:text-red-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-                            </svg>
-                        </div>
-
-                        {/* Text */}
-                        <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 text-center mb-1" style={{ fontFamily: 'Outfit,sans-serif' }}>
-                            Cancel booking?
-                        </h3>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 text-center mb-6">Booking #{cancelModel} will be permanently cancelled.</p>
-
-                        {/* Buttons */}
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => setCancelModel(null)}
-                                className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
-                            >
-                                Keep Booking
-                            </button>
-                            <button
-                                onClick={handleCancel}
-                                className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition-colors cursor-pointer"
-                            >
-                                Yes, cancel it
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     )
 }

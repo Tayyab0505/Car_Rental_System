@@ -1,32 +1,34 @@
-const express = require('express');
-const router = express.Router();
-const { verifyToken, verifyAdmin } = require('../middleware/authMiddleware');
+const express = require('express')
+const router = express.Router()
 
-// User Routes
-const userController = require('../controllers/userController');
+const { verifyToken, verifyAdmin } = require('../middleware/authMiddleware')
 
-router.post('/register', userController.register);
-router.post('/login', userController.login);
+const userController = require('../controllers/userController')
+const carController = require('../controllers/carController')
+const bookingController = require('../controllers/bookController')
 
-// Car Routes
-const carController = require('../controllers/carController');
+// User routes
+router.post('/register', userController.register)
+router.post('/login', userController.login)
 
-router.post('/addCar', verifyToken, verifyAdmin, carController.addCar);
-router.put('/updateCar/:id', verifyToken, verifyAdmin, carController.updateCar);
-router.get('/findAllCar', verifyToken, carController.findAllCar);
-router.get('/findByIdCar/:id', verifyToken, carController.findById);
-router.delete('/deleteCar/:id', verifyToken, verifyAdmin, carController.deleteCar);
+// Public car routes
+router.get('/findAllCar', carController.findAllCar)
+router.get('/findByIdCar/:id', carController.findById)
 
-// Booking Routes
-const bookingController = require('../controllers/bookController');
+// Admin car routes
+router.post('/addCar', verifyToken, verifyAdmin, carController.addCar)
+router.put('/updateCar/:id', verifyToken, verifyAdmin, carController.updateCar)
+router.delete('/deleteCar/:id', verifyToken, verifyAdmin, carController.deleteCar)
 
-router.post('/booking', verifyToken, bookingController.createBooking);
-router.put('/updateBooking/:id', verifyToken, bookingController.updateBooking);
-router.put("/bookings/:id/confirm", verifyAdmin, bookingController.confirmBooking);
-router.delete('/cancelBooking/:id', verifyToken, bookingController.cancelBooking);
-router.get('/getAllBooking', verifyToken, verifyAdmin, bookingController.getAll);
-router.get('/getByID/:id', verifyToken, bookingController.getById);
-router.get('/getBookingsByUser/:id', verifyToken, bookingController.getByUserId);
+// Booking routes
+router.post('/booking', verifyToken, bookingController.createBooking)
+router.put('/updateBooking/:id', verifyToken, bookingController.updateBooking)
+router.delete('/cancelBooking/:id', verifyToken, bookingController.cancelBooking)
+router.get('/getByID/:id', verifyToken, bookingController.getById)
+router.get('/getBookingsByUser/:id', verifyToken, bookingController.getByUserId)
 
+// Admin booking routes
+router.put('/bookings/:id/confirm', verifyToken, verifyAdmin, bookingController.confirmBooking)
+router.get('/getAllBooking', verifyToken, verifyAdmin, bookingController.getAll)
 
-module.exports = router;
+module.exports = router

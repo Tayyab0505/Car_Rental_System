@@ -18,7 +18,7 @@ export default function Dashboard() {
         return (
             <div className="flex h-screen overflow-hidden bg-slate-50">
 
-                <aside className="w-64 flex-shrink-0 h-screen">
+                <aside className="w-64 shrink-0 h-screen">
                     <Sidebar />
                 </aside>
 
@@ -38,7 +38,7 @@ export default function Dashboard() {
     }
 
     return (
-        <div className="min-h-screen bg-[#f7f9fc]">
+        <div className="min-h-screen bg-[#f5f8fc]">
 
             <UserNavbar />
 
