@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import API from '../../api/axios'
 
 export default function Register() {
+    const location = useLocation()
     const navigate = useNavigate()
 
     const [form, setForm] = useState({
@@ -38,16 +38,14 @@ export default function Register() {
             navigate('/login', {
                 replace: true,
                 state: {
+                    ...location.state,
                     email: form.email,
-                    message: 'Account created successfully. You can now sign in.'
+                    message: 'Account created successfully. Please sign in to continue.'
                 }
             })
 
         } catch (err) {
-            setError(
-                err.response?.data?.message ||
-                'Registration failed'
-            )
+            setError(err.response?.data?.message || 'Registration failed')
 
         } finally {
             setLoading(false)
@@ -57,15 +55,11 @@ export default function Register() {
     return (
         <div className="min-h-screen bg-[#f4f7fb] flex items-center justify-center p-4 md:p-8">
 
-            <div className="w-full max-w-6xl min-h-680px bg-white rounded-3xl border border-slate-200 shadow-2xl shadow-slate-300/40 overflow-hidden grid md:grid-cols-[1.05fr_1fr]">
+            <div className="w-full max-w-6xl min-h-170 bg-white rounded-3xl border border-slate-200 shadow-2xl shadow-slate-300/40 overflow-hidden grid md:grid-cols-[1.05fr_1fr]">
 
                 <div className="hidden md:block relative overflow-hidden bg-[#07172a]">
 
-                    <img
-                        src="/hero-car.jpg"
-                        alt="DriveEase premium car"
-                        className="absolute inset-0 size-full object-cover object-center"
-                    />
+                    <img src="/hero-car.jpg" alt="DriveEase premium car" className="absolute inset-0 size-full object-cover object-center" />
 
                     <div className="absolute inset-0 bg-linear-to-r from-[#07172a]/95 via-[#07172a]/75 to-[#07172a]/30" />
 
@@ -73,20 +67,11 @@ export default function Register() {
 
                     <div className="relative z-10 h-full p-10 xl:p-12 flex flex-col justify-between">
 
-                        <Link
-                            to="/cars"
-                            className="flex items-center gap-3 w-fit"
-                        >
+                        <Link to="/cars" className="flex items-center gap-3 w-fit">
 
                             <div className="size-12 rounded-xl bg-linear-to-br from-blue-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-blue-500/30">
 
-                                <svg
-                                    className="size-7 text-white"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth={1.8}
-                                    viewBox="0 0 24 24"
-                                >
+                                <svg className="size-7 text-white" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                                     <path d="M5 17H3a2 2 0 01-2-2V9a2 2 0 012-2h1l2-3h10l2 3h1a2 2 0 012 2v6a2 2 0 01-2 2h-2" />
                                     <circle cx="7" cy="17" r="2" />
                                     <circle cx="17" cy="17" r="2" />
@@ -96,6 +81,7 @@ export default function Register() {
                             </div>
 
                             <div>
+
                                 <h1 className="text-xl font-bold text-white">
                                     Drive<span className="text-cyan-400">Ease</span>
                                 </h1>
@@ -103,6 +89,7 @@ export default function Register() {
                                 <p className="text-[9px] uppercase tracking-[0.2em] text-slate-300">
                                     Premium Rentals
                                 </p>
+
                             </div>
 
                         </Link>
@@ -124,34 +111,6 @@ export default function Register() {
                                 Create your account, choose your perfect car and send your booking request in minutes.
                             </p>
 
-                            <div className="flex gap-3 mt-8">
-
-                                <div className="bg-white/10 backdrop-blur-sm border border-white/10 rounded-2xl px-5 py-4">
-
-                                    <p className="text-2xl font-bold text-white">
-                                        Free
-                                    </p>
-
-                                    <p className="text-xs text-slate-300 mt-1">
-                                        Account Creation
-                                    </p>
-
-                                </div>
-
-                                <div className="bg-white/10 backdrop-blur-sm border border-white/10 rounded-2xl px-5 py-4">
-
-                                    <p className="text-2xl font-bold text-white">
-                                        Simple
-                                    </p>
-
-                                    <p className="text-xs text-slate-300 mt-1">
-                                        Rental Requests
-                                    </p>
-
-                                </div>
-
-                            </div>
-
                         </div>
 
                         <p className="text-xs text-slate-400">
@@ -170,13 +129,7 @@ export default function Register() {
 
                             <div className="size-11 rounded-xl bg-linear-to-br from-blue-600 to-cyan-400 flex items-center justify-center">
 
-                                <svg
-                                    className="size-6 text-white"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth={1.8}
-                                    viewBox="0 0 24 24"
-                                >
+                                <svg className="size-6 text-white" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                                     <path d="M5 17H3a2 2 0 01-2-2V9a2 2 0 012-2h1l2-3h10l2 3h1a2 2 0 012 2v6a2 2 0 01-2 2h-2" />
                                     <circle cx="7" cy="17" r="2" />
                                     <circle cx="17" cy="17" r="2" />
@@ -190,17 +143,8 @@ export default function Register() {
 
                         </div>
 
-                        <Link
-                            to="/cars"
-                            className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-blue-600 transition"
-                        >
-                            <svg
-                                className="size-4"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth={2}
-                                viewBox="0 0 24 24"
-                            >
+                        <Link to="/cars" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-blue-600 transition" >
+                            <svg className="size-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"     >
                                 <path d="M19 12H5M11 18l-6-6 6-6" />
                             </svg>
 
@@ -229,10 +173,7 @@ export default function Register() {
                             </div>
                         )}
 
-                        <form
-                            onSubmit={handleSubmit}
-                            className="mt-7 space-y-4"
-                        >
+                        <form onSubmit={handleSubmit} className="mt-7 space-y-4">
 
                             <div>
 
@@ -240,17 +181,12 @@ export default function Register() {
                                     Full Name
                                 </label>
 
-                                <input
-                                    type="text"
-                                    required
-                                    placeholder="Enter your full name"
-                                    value={form.name}
-                                    onChange={e =>
-                                        setForm({
-                                            ...form,
-                                            name: e.target.value
-                                        })
-                                    }
+                                <input type="text" required placeholder="Enter your full name" value={form.name} onChange={e =>
+                                    setForm({
+                                        ...form,
+                                        name: e.target.value
+                                    })
+                                }
                                     className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-800 outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition"
                                 />
 
@@ -262,17 +198,12 @@ export default function Register() {
                                     Email Address
                                 </label>
 
-                                <input
-                                    type="email"
-                                    required
-                                    placeholder="you@example.com"
-                                    value={form.email}
-                                    onChange={e =>
-                                        setForm({
-                                            ...form,
-                                            email: e.target.value
-                                        })
-                                    }
+                                <input type="email" required placeholder="you@example.com" value={form.email} onChange={e =>
+                                    setForm({
+                                        ...form,
+                                        email: e.target.value
+                                    })
+                                }
                                     className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-800 outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition"
                                 />
 
@@ -286,17 +217,12 @@ export default function Register() {
                                         Password
                                     </label>
 
-                                    <input
-                                        type="password"
-                                        required
-                                        placeholder="Password"
-                                        value={form.password}
-                                        onChange={e =>
-                                            setForm({
-                                                ...form,
-                                                password: e.target.value
-                                            })
-                                        }
+                                    <input type="password" required placeholder="Password" value={form.password} onChange={e =>
+                                        setForm({
+                                            ...form,
+                                            password: e.target.value
+                                        })
+                                    }
                                         className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-800 outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition"
                                     />
 
@@ -308,17 +234,12 @@ export default function Register() {
                                         Confirm Password
                                     </label>
 
-                                    <input
-                                        type="password"
-                                        required
-                                        placeholder="Confirm password"
-                                        value={form.confirmPassword}
-                                        onChange={e =>
-                                            setForm({
-                                                ...form,
-                                                confirmPassword: e.target.value
-                                            })
-                                        }
+                                    <input type="password" required placeholder="Confirm password" value={form.confirmPassword} onChange={e =>
+                                        setForm({
+                                            ...form,
+                                            confirmPassword: e.target.value
+                                        })
+                                    }
                                         className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-800 outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition"
                                     />
 
@@ -326,11 +247,7 @@ export default function Register() {
 
                             </div>
 
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full h-12 rounded-xl bg-linear-to-r from-[#2563eb] via-[#1687f8] to-[#0ea5e9] text-white text-sm font-semibold shadow-lg shadow-blue-500/20 hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:translate-y-0"
-                            >
+                            <button type="submit" disabled={loading} className="w-full h-12 rounded-xl bg-linear-to-r from-[#2563eb] via-[#1687f8] to-[#0ea5e9] text-white text-sm font-semibold shadow-lg shadow-blue-500/20 hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:translate-y-0">
                                 {loading
                                     ? 'Creating account...'
                                     : 'Create Account'
@@ -351,10 +268,7 @@ export default function Register() {
 
                         </div>
 
-                        <Link
-                            to="/login"
-                            className="w-full h-12 rounded-xl border border-slate-200 bg-white text-slate-700 text-sm font-semibold flex items-center justify-center hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50/40 transition"
-                        >
+                        <Link to="/login" state={location.state} className="w-full h-12 rounded-xl border border-slate-200 bg-white text-slate-700 text-sm font-semibold flex items-center justify-center hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50/40 transition">
                             Sign In Instead
                         </Link>
 

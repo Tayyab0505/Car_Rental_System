@@ -1,12 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
 import API from '../../api/axios'
 
 const CarSlider = ({ car }) => {
-    const images = [
-        car.imageUrl,
-        car.imageUrl2,
-        car.imageUrl3
-    ].filter(Boolean)
+    const images = [car.imageUrl, car.imageUrl2, car.imageUrl3].filter(Boolean)
 
     const [current, setCurrent] = useState(0)
     const [errored, setErrored] = useState({})
@@ -17,13 +15,7 @@ const CarSlider = ({ car }) => {
         return (
             <div className="h-52 bg-slate-100 flex items-center justify-center">
 
-                <svg
-                    className="size-16 text-slate-300"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={1.2}
-                    viewBox="0 0 24 24"
-                >
+                <svg className="size-16 text-slate-300" fill="none" stroke="currentColor" strokeWidth={1.2} viewBox="0 0 24 24">
                     <path d="M5 17H3a2 2 0 01-2-2V9a2 2 0 012-2h1l2-3h10l2 3h1a2 2 0 012 2v6a2 2 0 01-2 2h-2" />
                     <circle cx="7" cy="17" r="2" />
                     <circle cx="17" cy="17" r="2" />
@@ -55,42 +47,27 @@ const CarSlider = ({ car }) => {
     return (
         <div className="relative h-52 overflow-hidden bg-slate-100 group">
 
-            <img
-                src={validImages[index]}
-                alt={`${car.brand} ${car.model}`}
-                onError={() => {
-                    const originalIndex = images.indexOf(validImages[index])
+            <img src={validImages[index]} alt={`${car.brand} ${car.model}`} onError={() => {
+                const originalIndex = images.indexOf(validImages[index])
 
-                    setErrored(prev => ({
-                        ...prev,
-                        [originalIndex]: true
-                    }))
-                }}
+                setErrored(prev => ({ ...prev, [originalIndex]: true }))
+            }}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
 
             <div className="absolute inset-0 bg-linear-to-t from-slate-950/20 via-transparent to-transparent" />
 
-            <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-white/95 text-emerald-600 text-[11px] font-semibold shadow-sm">
-                Available
-            </span>
+            <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-white/95 text-emerald-600 text-[11px] font-semibold shadow-sm">Available</span>
 
             {validImages.length > 1 && (
                 <>
-
-                    <button
-                        onClick={prev}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 size-8 rounded-full bg-slate-950/40 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-slate-950/60 transition"
-                    >
+                    <button onClick={prev} className="absolute left-3 top-1/2 -translate-y-1/2 size-8 rounded-full bg-slate-950/40 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-slate-950/60 transition">
                         <svg className="size-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                             <path d="M15 18l-6-6 6-6" />
                         </svg>
                     </button>
 
-                    <button
-                        onClick={next}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 size-8 rounded-full bg-slate-950/40 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-slate-950/60 transition"
-                    >
+                    <button onClick={next} className="absolute right-3 top-1/2 -translate-y-1/2 size-8 rounded-full bg-slate-950/40 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-slate-950/60 transition">
                         <svg className="size-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                             <path d="M9 18l6-6-6-6" />
                         </svg>
@@ -99,16 +76,11 @@ const CarSlider = ({ car }) => {
                     <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1">
 
                         {validImages.map((_, i) => (
-                            <button
-                                key={i}
-                                onClick={e => {
-                                    e.stopPropagation()
-                                    setCurrent(i)
-                                }}
-                                className={`h-1.5 rounded-full transition-all ${i === index
-                                        ? 'w-5 bg-white'
-                                        : 'w-1.5 bg-white/60'
-                                    }`}
+                            <button key={i} onClick={e => {
+                                e.stopPropagation()
+                                setCurrent(i)
+                            }}
+                                className={`h-1.5 rounded-full transition-all ${i === index ? 'w-5 bg-white' : 'w-1.5 bg-white/60'}`}
                             />
                         ))}
 
@@ -124,30 +96,27 @@ const CarSlider = ({ car }) => {
 const DetailBadge = ({ icon, label }) => {
     return (
         <div className="flex items-center gap-2 text-slate-500">
-
-            <span className="text-slate-400">
-                {icon}
-            </span>
-
-            <span className="text-xs font-medium">
-                {label}
-            </span>
-
+            <span className="text-slate-400">{icon}</span>
+            <span className="text-xs font-medium">{label}</span>
         </div>
     )
 }
 
 export default function UserCars() {
+    const { token } = useAuth()
+
+    const navigate = useNavigate()
+    const location = useLocation()
+
+    const bookingIntent = location.state?.bookingIntent
+
     const [cars, setCars] = useState([])
     const [loading, setLoading] = useState(true)
 
     const [bookingModal, setBookingModal] = useState(null)
     const [bookingError, setBookingError] = useState('')
 
-    const [bookingForm, setBookingForm] = useState({
-        startDate: '',
-        endDate: ''
-    })
+    const [bookingForm, setBookingForm] = useState({ startDate: '', endDate: '' })
 
     const [msg, setMsg] = useState('')
 
@@ -166,89 +135,66 @@ export default function UserCars() {
     const [sliderMax, setSliderMax] = useState(0)
 
     useEffect(() => {
-        API.get('/findAllCar')
-            .then(response => {
-                const data = response.data
+        API.get('/findAllCar').then(response => {
+            const data = response.data
 
-                setCars(data)
+            setCars(data)
 
-                if (data.length > 0) {
-                    const prices = data.map(car => Number(car.pricePerDay))
+            if (data.length > 0) {
+                const prices = data.map(car => Number(car.pricePerDay))
 
-                    const lowest = Math.min(...prices)
-                    const highest = Math.max(...prices)
+                const lowest = Math.min(...prices)
+                const highest = Math.max(...prices)
 
-                    setMinPrice(lowest)
-                    setMaxPrice(highest)
-                    setSliderMin(lowest)
-                    setSliderMax(highest)
+                setMinPrice(lowest)
+                setMaxPrice(highest)
+                setSliderMin(lowest)
+                setSliderMax(highest)
+            }
+
+            if (bookingIntent?.carId) {
+                const selectedCar = data.find(car =>
+                    String(car.id || car._id) === String(bookingIntent.carId)
+                )
+
+                if (selectedCar) {
+                    setBookingModal(selectedCar)
+
+                    setBookingForm({
+                        startDate: bookingIntent.startDate || '',
+                        endDate: bookingIntent.endDate || ''
+                    })
                 }
-            })
+            }
+        })
             .catch(error => {
                 console.log(error)
             })
             .finally(() => {
                 setLoading(false)
             })
-    }, [])
+    }, [bookingIntent])
 
     const brands = useMemo(() => {
-        return [
-            'all',
-            ...new Set(
-                cars
-                    .map(car => car.brand)
-                    .filter(Boolean)
-            )
-        ]
+        return ['all', ...new Set(cars.map(car => car.brand).filter(Boolean))]
     }, [cars])
 
     const categories = useMemo(() => {
-        return [
-            'all',
-            ...new Set(
-                cars
-                    .map(car => car.category)
-                    .filter(Boolean)
-            )
-        ]
+        return ['all', ...new Set(cars.map(car => car.category).filter(Boolean))]
     }, [cars])
 
     const availableCountries = useMemo(() => {
-        return [
-            'all',
-            ...new Set(
-                cars
-                    .filter(car => car.availability)
-                    .map(car => car.country)
-                    .filter(Boolean)
-            )
-        ]
+        return ['all', ...new Set(cars.filter(car => car.availability).map(car => car.country).filter(Boolean))]
     }, [cars])
 
     const availableCities = useMemo(() => {
         const availableCars = cars.filter(car => car.availability)
 
         if (countryFilter === 'all') {
-            return [
-                'all',
-                ...new Set(
-                    availableCars
-                        .map(car => car.city)
-                        .filter(Boolean)
-                )
-            ]
+            return ['all', ...new Set(availableCars.map(car => car.city).filter(Boolean))]
         }
 
-        return [
-            'all',
-            ...new Set(
-                availableCars
-                    .filter(car => car.country === countryFilter)
-                    .map(car => car.city)
-                    .filter(Boolean)
-            )
-        ]
+        return ['all', ...new Set(availableCars.filter(car => car.country === countryFilter).map(car => car.city).filter(Boolean))]
     }, [cars, countryFilter])
 
     const filtered = useMemo(() => {
@@ -318,19 +264,13 @@ export default function UserCars() {
 
     const handleInputMin = value => {
         setSliderMin(
-            Math.max(
-                minPrice,
-                Math.min(Number(value), sliderMax - 1)
-            )
+            Math.max(minPrice, Math.min(Number(value), sliderMax - 1))
         )
     }
 
     const handleInputMax = value => {
         setSliderMax(
-            Math.min(
-                maxPrice,
-                Math.max(Number(value), sliderMin + 1)
-            )
+            Math.min(maxPrice, Math.max(Number(value), sliderMin + 1))
         )
     }
 
@@ -358,9 +298,25 @@ export default function UserCars() {
             return
         }
 
+        if (!token) {
+            navigate('/login', {
+                state: {
+                    from: '/cars',
+                    message: 'Please sign in to continue your booking.',
+                    bookingIntent: {
+                        carId: bookingModal.id || bookingModal._id,
+                        startDate: bookingForm.startDate,
+                        endDate: bookingForm.endDate
+                    }
+                }
+            })
+
+            return
+        }
+
         try {
             await API.post('/booking', {
-                carId: bookingModal.id,
+                carId: bookingModal.id || bookingModal._id,
                 ...bookingForm
             })
 
@@ -408,11 +364,13 @@ export default function UserCars() {
         : 0
 
     const selectClass = 'w-full h-12 px-4 rounded-xl border border-slate-200 bg-white text-slate-700 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/10 transition'
+
     const labelClass = 'block text-xs font-medium text-slate-500 mb-2'
 
     return (
         <div className="bg-[#f5f8fc] min-h-screen pb-12">
 
+            {/* Hero */}
             <section className="relative min-h-430px overflow-hidden bg-[#07111f]">
 
                 <div className="absolute top-0 right-0 w-full lg:w-[68%] h-full">
@@ -462,7 +420,7 @@ export default function UserCars() {
 
                             <div className="flex items-center gap-3">
 
-                                <div className="size-11 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-sky-400 backdrop-blur-sm">
+                                <div className="size-11 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-sky-400">
 
                                     <svg className="size-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                                         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
@@ -485,7 +443,7 @@ export default function UserCars() {
 
                             <div className="flex items-center gap-3">
 
-                                <div className="size-11 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-sky-400 backdrop-blur-sm">
+                                <div className="size-11 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-sky-400">
 
                                     <svg className="size-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                                         <circle cx="12" cy="12" r="9" />
@@ -508,7 +466,7 @@ export default function UserCars() {
 
                             <div className="flex items-center gap-3">
 
-                                <div className="size-11 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-sky-400 backdrop-blur-sm">
+                                <div className="size-11 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-sky-400">
 
                                     <svg className="size-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                                         <path d="M20 7h-9M14 17H5M17 4l3 3-3 3M8 14l-3 3 3 3" />
@@ -538,6 +496,7 @@ export default function UserCars() {
 
             <div className="max-w-1500px mx-auto px-5 md:px-8">
 
+                {/* Search */}
                 <section className="relative -mt-10 z-20">
 
                     <div className="bg-white rounded-2xl shadow-xl border border-slate-200/70 p-4 md:p-5">
@@ -546,32 +505,16 @@ export default function UserCars() {
 
                             <div className="relative">
 
-                                <svg
-                                    className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-slate-400"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth={2}
-                                    viewBox="0 0 24 24"
-                                >
+                                <svg className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-slate-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                                     <circle cx="11" cy="11" r="8" />
                                     <path d="M21 21l-4.35-4.35" />
                                 </svg>
 
-                                <input
-                                    type="text"
-                                    value={searchTerm}
-                                    onChange={e => setSearchTerm(e.target.value)}
-                                    placeholder="Search car, city or country"
-                                    className="w-full h-12 pl-12 pr-4 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-700 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/10 transition"
-                                />
+                                <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search car, city or country" className="w-full h-12 pl-12 pr-4 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-700 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/10 transition" />
 
                             </div>
 
-                            <select
-                                value={cityFilter}
-                                onChange={e => setCityFilter(e.target.value)}
-                                className={selectClass}
-                            >
+                            <select value={cityFilter} onChange={e => setCityFilter(e.target.value)} className={selectClass}>
                                 {availableCities.map(city => (
                                     <option key={city} value={city}>
                                         {city === 'all' ? 'All Locations' : city}
@@ -579,28 +522,19 @@ export default function UserCars() {
                                 ))}
                             </select>
 
-                            <select
-                                value={categoryFilter}
-                                onChange={e => setCategoryFilter(e.target.value)}
-                                className={selectClass}
-                            >
+                            <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className={selectClass}>
                                 <option value="all">
                                     All Car Types
                                 </option>
 
-                                {categories
-                                    .filter(category => category !== 'all')
-                                    .map(category => (
-                                        <option key={category} value={category}>
-                                            {category}
-                                        </option>
-                                    ))}
+                                {categories.filter(category => category !== 'all').map(category => (
+                                    <option key={category} value={category}>
+                                        {category}
+                                    </option>
+                                ))}
                             </select>
 
-                            <button
-                                onClick={() => setFiltersOpen(prev => !prev)}
-                                className="h-12 px-7 rounded-xl bg-linear-to-r from-[#2563eb] via-[#1687f8] to-[#0ea5e9] text-white text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 hover:-translate-y-0.5 transition-all"
-                            >
+                            <button onClick={() => setFiltersOpen(prev => !prev)} className="h-12 px-7 rounded-xl bg-linear-to-r from-[#2563eb] via-[#1687f8] to-[#0ea5e9] text-white text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 hover:-translate-y-0.5 transition-all">
                                 <svg className="size-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                                     <path d="M3 6h18M6 12h12M10 18h4" />
                                 </svg>
@@ -620,29 +554,20 @@ export default function UserCars() {
                     </div>
                 )}
 
+                {/* Categories */}
                 <section className="mt-9 flex items-center justify-between gap-5 flex-wrap">
 
                     <div className="flex gap-2 overflow-x-auto">
 
                         {categories.map(category => (
-                            <button
-                                key={category}
-                                onClick={() => setCategoryFilter(category)}
-                                className={`px-5 py-2.5 rounded-full border text-sm font-medium transition-all ${categoryFilter === category
-                                        ? 'bg-linear-to-r from-blue-600 to-sky-500 border-transparent text-white shadow-md shadow-blue-500/15'
-                                        : 'bg-white border-slate-200 text-slate-600 hover:border-sky-400 hover:text-sky-600'
-                                    }`}
-                            >
+                            <button key={category} onClick={() => setCategoryFilter(category)} className={`px-5 py-2.5 rounded-full border text-sm font-medium transition-all ${categoryFilter === category ? 'bg-linear-to-r from-blue-600 to-sky-500 border-transparent text-white shadow-md shadow-blue-500/15' : 'bg-white border-slate-200 text-slate-600 hover:border-sky-400 hover:text-sky-600'}`}>
                                 {category === 'all' ? 'All Cars' : category}
                             </button>
                         ))}
 
                     </div>
 
-                    <button
-                        onClick={() => setFiltersOpen(prev => !prev)}
-                        className="text-sm font-semibold text-blue-600 hover:text-sky-500 transition"
-                    >
+                    <button onClick={() => setFiltersOpen(prev => !prev)} className="text-sm font-semibold text-blue-600 hover:text-sky-500 transition">
                         More Filters →
                     </button>
 
@@ -663,10 +588,7 @@ export default function UserCars() {
                                 </p>
                             </div>
 
-                            <button
-                                onClick={resetFilters}
-                                className="text-sm font-medium text-blue-600 hover:text-sky-500"
-                            >
+                            <button onClick={resetFilters} className="text-sm font-medium text-blue-600 hover:text-sky-500">
                                 Reset All
                             </button>
 
@@ -675,58 +597,54 @@ export default function UserCars() {
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
 
                             <div>
+
                                 <label className={labelClass}>
                                     Brand
                                 </label>
 
-                                <select
-                                    value={brandFilter}
-                                    onChange={e => setBrandFilter(e.target.value)}
-                                    className={selectClass}
-                                >
+                                <select value={brandFilter} onChange={e => setBrandFilter(e.target.value)} className={selectClass} >
                                     {brands.map(brand => (
                                         <option key={brand} value={brand}>
                                             {brand === 'all' ? 'All Brands' : brand}
                                         </option>
                                     ))}
                                 </select>
+
                             </div>
 
                             <div>
+
                                 <label className={labelClass}>
                                     Country
                                 </label>
 
                                 <select
-                                    value={countryFilter}
-                                    onChange={e => {
+                                    value={countryFilter} onChange={e => {
                                         setCountryFilter(e.target.value)
                                         setCityFilter('all')
                                     }}
-                                    className={selectClass}
-                                >
+                                    className={selectClass} >
                                     {availableCountries.map(country => (
                                         <option key={country} value={country}>
                                             {country === 'all' ? 'All Countries' : country}
                                         </option>
                                     ))}
                                 </select>
+
                             </div>
 
                             <div>
+
                                 <label className={labelClass}>
                                     Sort By Price
                                 </label>
 
-                                <select
-                                    value={sortOrder}
-                                    onChange={e => setSortOrder(e.target.value)}
-                                    className={selectClass}
-                                >
+                                <select value={sortOrder} onChange={e => setSortOrder(e.target.value)} className={selectClass}>
                                     <option value="none">Default</option>
                                     <option value="asc">Low to High</option>
                                     <option value="desc">High to Low</option>
                                 </select>
+
                             </div>
 
                             <div>
@@ -737,23 +655,13 @@ export default function UserCars() {
 
                                 <div className="flex items-center gap-2">
 
-                                    <input
-                                        type="number"
-                                        value={sliderMin}
-                                        onChange={e => handleInputMin(e.target.value)}
-                                        className={selectClass}
-                                    />
+                                    <input type="number" value={sliderMin} onChange={e => handleInputMin(e.target.value)} className={selectClass} />
 
                                     <span className="text-slate-400">
                                         -
                                     </span>
 
-                                    <input
-                                        type="number"
-                                        value={sliderMax}
-                                        onChange={e => handleInputMax(e.target.value)}
-                                        className={selectClass}
-                                    />
+                                    <input type="number" value={sliderMax} onChange={e => handleInputMax(e.target.value)} className={selectClass} />
 
                                 </div>
 
@@ -764,6 +672,7 @@ export default function UserCars() {
                     </section>
                 )}
 
+                {/* Cars */}
                 <section id="popular-cars" className="mt-11">
 
                     <div className="flex items-end justify-between gap-5">
@@ -814,10 +723,7 @@ export default function UserCars() {
                                 Try changing your filters
                             </p>
 
-                            <button
-                                onClick={resetFilters}
-                                className="mt-4 px-5 py-2.5 rounded-xl bg-linear-to-r from-blue-600 to-sky-500 text-white text-sm font-medium"
-                            >
+                            <button onClick={resetFilters} className="mt-4 px-5 py-2.5 rounded-xl bg-linear-to-r from-blue-600 to-sky-500 text-white text-sm font-medium">
                                 Reset Filters
                             </button>
 
@@ -826,10 +732,7 @@ export default function UserCars() {
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mt-6">
 
                             {filtered.map(car => (
-                                <div
-                                    key={car.id}
-                                    className="group bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-                                >
+                                <div key={car.id || car._id} className="group bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
 
                                     <CarSlider car={car} />
 
@@ -931,13 +834,11 @@ export default function UserCars() {
                                             }}
                                             className="w-full h-11 mt-5 rounded-xl bg-linear-to-r from-[#2563eb] via-[#1687f8] to-[#0ea5e9] text-white text-sm font-semibold flex items-center justify-center gap-2 shadow-md shadow-blue-500/15 hover:-translate-y-0.5 transition-all"
                                         >
-
                                             View Details
 
                                             <svg className="size-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                                                 <path d="M5 12h14M13 6l6 6-6 6" />
                                             </svg>
-
                                         </button>
 
                                     </div>
@@ -950,6 +851,7 @@ export default function UserCars() {
 
                 </section>
 
+                {/* Banner */}
                 <section className="mt-12 overflow-hidden rounded-2xl bg-linear-to-r from-[#08172a] via-[#0d2c4d] to-[#164b72] shadow-lg">
 
                     <div className="px-7 py-7 md:px-10 flex items-center justify-between gap-5 flex-wrap">
@@ -980,6 +882,7 @@ export default function UserCars() {
 
                 </section>
 
+                {/* Booking modal */}
                 {bookingModal && (
                     <div className="fixed inset-0 bg-slate-950/65 backdrop-blur-sm z-50 flex items-center justify-center p-4">
 
@@ -1050,39 +953,37 @@ export default function UserCars() {
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
 
                                     <div>
+
                                         <label className={labelClass}>
                                             Pickup Date
                                         </label>
 
-                                        <input
-                                            type="date"
-                                            value={bookingForm.startDate}
-                                            onChange={e =>
-                                                setBookingForm({
-                                                    ...bookingForm,
-                                                    startDate: e.target.value
-                                                })
-                                            }
+                                        <input type="date" value={bookingForm.startDate} onChange={e =>
+                                            setBookingForm({
+                                                ...bookingForm,
+                                                startDate: e.target.value
+                                            })
+                                        }
                                             className={selectClass}
                                         />
+
                                     </div>
 
                                     <div>
+
                                         <label className={labelClass}>
                                             Return Date
                                         </label>
 
-                                        <input
-                                            type="date"
-                                            value={bookingForm.endDate}
-                                            onChange={e =>
-                                                setBookingForm({
-                                                    ...bookingForm,
-                                                    endDate: e.target.value
-                                                })
-                                            }
+                                        <input type="date" value={bookingForm.endDate} onChange={e =>
+                                            setBookingForm({
+                                                ...bookingForm,
+                                                endDate: e.target.value
+                                            })
+                                        }
                                             className={selectClass}
                                         />
+
                                     </div>
 
                                 </div>
@@ -1091,11 +992,15 @@ export default function UserCars() {
                                     <div className="mt-5 p-4 rounded-xl bg-slate-50 border border-slate-100">
 
                                         <div className="flex justify-between text-sm text-slate-500">
-                                            <span>Rental Duration</span>
+
+                                            <span>
+                                                Rental Duration
+                                            </span>
 
                                             <span>
                                                 {bookingDays} {bookingDays === 1 ? 'day' : 'days'}
                                             </span>
+
                                         </div>
 
                                         <div className="flex justify-between mt-3 pt-3 border-t border-slate-200">
@@ -1113,6 +1018,12 @@ export default function UserCars() {
                                     </div>
                                 )}
 
+                                {!token && (
+                                    <div className="mt-4 p-3 rounded-xl bg-blue-50 border border-blue-100 text-blue-700 text-xs leading-5">
+                                        You can explore cars freely. Sign in is only required when you send a booking request.
+                                    </div>
+                                )}
+
                                 {bookingError && (
                                     <div className="mt-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">
                                         {bookingError}
@@ -1121,21 +1032,16 @@ export default function UserCars() {
 
                                 <div className="grid grid-cols-2 gap-3 mt-6">
 
-                                    <button
-                                        onClick={() => {
-                                            setBookingModal(null)
-                                            setBookingError('')
-                                        }}
-                                        className="h-11 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition"
-                                    >
+                                    <button onClick={() => {
+                                        setBookingModal(null)
+                                        setBookingError('')
+                                    }} className="h-11 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition">
                                         Cancel
                                     </button>
 
-                                    <button
-                                        onClick={handleBook}
-                                        className="h-11 rounded-xl bg-linear-to-r from-[#2563eb] via-[#1687f8] to-[#0ea5e9] text-white text-sm font-semibold shadow-md shadow-blue-500/20"
-                                    >
-                                        Send Request
+                                    <button onClick={handleBook}
+                                        className="h-11 rounded-xl bg-linear-to-r from-[#2563eb] via-[#1687f8] to-[#0ea5e9] text-white text-sm font-semibold shadow-md shadow-blue-500/20">
+                                        {token ? 'Send Request' : 'Sign In & Continue'}
                                     </button>
 
                                 </div>

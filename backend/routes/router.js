@@ -20,15 +20,16 @@ router.post('/addCar', verifyToken, verifyAdmin, carController.addCar)
 router.put('/updateCar/:id', verifyToken, verifyAdmin, carController.updateCar)
 router.delete('/deleteCar/:id', verifyToken, verifyAdmin, carController.deleteCar)
 
-// Booking routes
+// User booking routes
 router.post('/booking', verifyToken, bookingController.createBooking)
-router.put('/updateBooking/:id', verifyToken, bookingController.updateBooking)
 router.delete('/cancelBooking/:id', verifyToken, bookingController.cancelBooking)
+router.get('/myBookings', verifyToken, bookingController.getMyBookings)
 router.get('/getByID/:id', verifyToken, bookingController.getById)
-router.get('/getBookingsByUser/:id', verifyToken, bookingController.getByUserId)
 
 // Admin booking routes
+router.put('/updateBooking/:id', verifyToken, verifyAdmin, bookingController.updateBooking)
 router.put('/bookings/:id/confirm', verifyToken, verifyAdmin, bookingController.confirmBooking)
 router.get('/getAllBooking', verifyToken, verifyAdmin, bookingController.getAll)
+router.get('/getBookingsByUser/:id', verifyToken, verifyAdmin, bookingController.getByUserId)
 
 module.exports = router

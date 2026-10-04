@@ -1,4 +1,5 @@
-const Sequelize = require('sequelize');
+const Sequelize = require('sequelize')
+
 module.exports = function (sequelize, DataTypes) {
   return sequelize.define('booking', {
     id: {
@@ -28,12 +29,17 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: false
     },
     status: {
-      type: DataTypes.ENUM('pending', 'confirmed', 'cancelled'),
-      allowNull: false
+      type: DataTypes.ENUM(
+        'pending',
+        'confirmed',
+        'cancelled'
+      ),
+      allowNull: false,
+      defaultValue: 'pending'
     }
   }, {
     sequelize,
     tableName: 'booking',
-    timestamps: true,
-  });
-};
+    timestamps: true
+  })
+}
