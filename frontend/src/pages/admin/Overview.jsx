@@ -205,7 +205,7 @@ export default function Overview() {
     return (
         <div className="min-h-full bg-[#f6f8fc]">
             <div className="max-w-screen-2xl mx-auto px-4 py-6 md:px-8 md:py-8">
-                <section className="relative overflow-hidden rounded-[32px] bg-linear-to-r from-[#0a1426] via-[#10243f] to-[#183b63] p-7 md:p-9 shadow-[0_20px_50px_rgba(2,6,23,0.18)]">
+                <section className="relative overflow-hidden rounded-4xl bg-linear-to-r from-[#0a1426] via-[#10243f] to-[#183b63] p-7 md:p-9 shadow-[0_20px_50px_rgba(2,6,23,0.18)]">
                     <div className="absolute -top-24 right-10 size-72 rounded-full bg-sky-400/10 blur-3xl" />
                     <div className="absolute -bottom-24 left-1/3 size-64 rounded-full bg-blue-500/10 blur-3xl" />
 
