@@ -34,9 +34,7 @@ function getCarName(booking) {
 }
 
 function getCarImage(booking) {
-    return getImageUrl(
-        booking?.car?.imageUrl || ''
-    )
+    return getImageUrl(booking?.car?.imageUrl || '')
 }
 
 function getStatusClass(status) {
@@ -87,10 +85,7 @@ function Pagination({ page, totalPages, setPage }) {
             Math.abs(number - page) <= 1
         )
         .reduce((result, number, index, array) => {
-            if (
-                index > 0 &&
-                number - array[index - 1] > 1
-            ) {
+            if (index > 0 && number - array[index - 1] > 1) {
                 result.push('...')
             }
 
@@ -139,7 +134,6 @@ function Pagination({ page, totalPages, setPage }) {
 
 export default function Overview() {
     const { user } = useAuth()
-
     const navigate = useNavigate()
 
     const [cars, setCars] = useState([])
@@ -153,10 +147,7 @@ export default function Overview() {
     useEffect(() => {
         const fetchOverview = async () => {
             try {
-                const [
-                    carsResponse,
-                    bookingsResponse
-                ] = await Promise.all([
+                const [carsResponse, bookingsResponse] = await Promise.all([
                     API.get('/findAllAdminCars'),
                     API.get('/getAllBooking')
                 ])
@@ -209,8 +200,7 @@ export default function Overview() {
             )
             .reduce(
                 (total, booking) =>
-                    total +
-                    Number(booking.totalAmount || 0),
+                    total + Number(booking.totalAmount || 0),
                 0
             )
 
@@ -245,13 +235,9 @@ export default function Overview() {
     const stats = [
         {
             title: 'Total Cars',
-            value: loading
-                ? '...'
-                : cars.length,
-            subtitle:
-                `${summary.availableCars} currently available`,
-            iconClass:
-                'bg-blue-50 text-blue-600',
+            value: loading ? '...' : cars.length,
+            subtitle: `${summary.availableCars} currently available`,
+            iconClass: 'bg-blue-50 text-blue-600',
             icon: (
                 <svg className="size-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                     <path d="M5 17H3a2 2 0 01-2-2V9a2 2 0 012-2h1l2-3h10l2 3h1a2 2 0 012 2v6a2 2 0 01-2 2h-2" />
@@ -263,13 +249,9 @@ export default function Overview() {
         },
         {
             title: 'Total Bookings',
-            value: loading
-                ? '...'
-                : bookings.length,
-            subtitle:
-                `${summary.pending} awaiting approval`,
-            iconClass:
-                'bg-violet-50 text-violet-600',
+            value: loading ? '...' : bookings.length,
+            subtitle: `${summary.pending} awaiting approval`,
+            iconClass: 'bg-violet-50 text-violet-600',
             icon: (
                 <svg className="size-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                     <rect x="3" y="4" width="18" height="18" rx="2" />
@@ -279,13 +261,9 @@ export default function Overview() {
         },
         {
             title: 'Revenue',
-            value: loading
-                ? '...'
-                : `$${summary.revenue.toLocaleString()}`,
-            subtitle:
-                'From confirmed bookings',
-            iconClass:
-                'bg-emerald-50 text-emerald-600',
+            value: loading ? '...' : `$${summary.revenue.toLocaleString()}`,
+            subtitle: 'From confirmed bookings',
+            iconClass: 'bg-emerald-50 text-emerald-600',
             icon: (
                 <svg className="size-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                     <path d="M12 2v20M17 6.5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H7" />
@@ -294,13 +272,9 @@ export default function Overview() {
         },
         {
             title: 'Confirmed',
-            value: loading
-                ? '...'
-                : summary.confirmed,
-            subtitle:
-                'Approved rental requests',
-            iconClass:
-                'bg-cyan-50 text-cyan-600',
+            value: loading ? '...' : summary.confirmed,
+            subtitle: 'Approved rental requests',
+            iconClass: 'bg-cyan-50 text-cyan-600',
             icon: (
                 <svg className="size-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                     <circle cx="12" cy="12" r="9" />
@@ -338,9 +312,7 @@ export default function Overview() {
                         <div className="flex flex-wrap gap-3">
                             <div className="min-w-32 rounded-3xl border border-white/10 bg-white/8 backdrop-blur-xl px-5 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
                                 <p className="text-2xl font-bold text-white">
-                                    {loading
-                                        ? '...'
-                                        : summary.pending}
+                                    {loading ? '...' : summary.pending}
                                 </p>
 
                                 <p className="text-xs text-slate-300 mt-1">
@@ -350,9 +322,7 @@ export default function Overview() {
 
                             <div className="min-w-32 rounded-3xl border border-white/10 bg-white/8 backdrop-blur-xl px-5 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
                                 <p className="text-2xl font-bold text-white">
-                                    {loading
-                                        ? '...'
-                                        : summary.availableCars}
+                                    {loading ? '...' : summary.availableCars}
                                 </p>
 
                                 <p className="text-xs text-slate-300 mt-1">
@@ -371,15 +341,12 @@ export default function Overview() {
 
                 <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mt-6">
                     {stats.map(stat => (
-                        <StatCard
-                            key={stat.title}
-                            {...stat}
-                        />
+                        <StatCard key={stat.title} {...stat} />
                     ))}
                 </section>
 
-                <section className="grid grid-cols-1 xl:grid-cols-[1fr_2fr] gap-5 mt-6">
-                    <div className="bg-white rounded-[28px] border border-[#e6ebf2] shadow-[0_10px_30px_rgba(15,23,42,0.05)] p-6">
+                <section className="grid grid-cols-1 xl:grid-cols-[1fr_2fr] items-start gap-5 mt-6">
+                    <div className="self-start bg-white rounded-[28px] border border-[#e6ebf2] shadow-[0_10px_30px_rgba(15,23,42,0.05)] p-6">
                         <p className="text-xs font-semibold tracking-[0.18em] text-sky-600 uppercase">
                             Booking Status
                         </p>
@@ -489,12 +456,7 @@ export default function Overview() {
                                 <select
                                     value={rowLimit}
                                     onChange={event => {
-                                        setRowLimit(
-                                            Number(
-                                                event.target.value
-                                            )
-                                        )
-
+                                        setRowLimit(Number(event.target.value))
                                         setPage(1)
                                     }}
                                     className="h-10 px-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-600 outline-none focus:border-sky-500"
@@ -593,24 +555,17 @@ export default function Overview() {
 
                                                 <td className="px-5 py-4">
                                                     <p className="text-sm text-slate-600">
-                                                        {formatDate(
-                                                            booking.startDate
-                                                        )}
+                                                        {formatDate(booking.startDate)}
                                                     </p>
 
                                                     <p className="text-xs text-slate-400 mt-1">
-                                                        to{' '}
-                                                        {formatDate(
-                                                            booking.endDate
-                                                        )}
+                                                        to {formatDate(booking.endDate)}
                                                     </p>
                                                 </td>
 
                                                 <td className="px-5 py-4">
                                                     <p className="text-sm font-bold text-[#0f172a]">
-                                                        ${Number(
-                                                            booking.totalAmount || 0
-                                                        ).toLocaleString()}
+                                                        ${Number(booking.totalAmount || 0).toLocaleString()}
                                                     </p>
                                                 </td>
 

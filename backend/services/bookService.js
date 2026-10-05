@@ -20,13 +20,26 @@ const attachCars = async bookings => {
         }
     })
 
-    const carMap = new Map(cars.map(car => [car.id, car.toJSON()]))
+    const carMap = new Map(
+        cars.map(car => [
+            car.id,
+            car.toJSON()
+        ])
+    )
 
-    return bookings.map(booking => ({ ...booking.toJSON(), car: carMap.get(booking.carId) || null }))
+    return bookings.map(booking => ({
+        ...booking.toJSON(),
+        car: carMap.get(booking.carId) || null
+    }))
 }
 
 const createBooking = async data => {
-    const { userId, carId, startDate, endDate } = data
+    const {
+        userId,
+        carId,
+        startDate,
+        endDate
+    } = data
 
     if (!carId || !startDate || !endDate) {
         throw new Error('All fields are required')
@@ -35,7 +48,11 @@ const createBooking = async data => {
     const start = new Date(`${startDate}T00:00:00Z`)
     const end = new Date(`${endDate}T00:00:00Z`)
 
-    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end <= start) {
+    if (
+        Number.isNaN(start.getTime()) ||
+        Number.isNaN(end.getTime()) ||
+        end <= start
+    ) {
         throw new Error('Invalid date range')
     }
 
@@ -45,7 +62,7 @@ const createBooking = async data => {
         throw new Error('Car not found')
     }
 
-    if (!car.availability || car.status === 'booked' || car.status === 'maintenance') {
+    if (!car.availability || car.status === 'maintenance') {
         throw new Error('Car is not available for booking')
     }
 
@@ -66,15 +83,13 @@ const createBooking = async data => {
     })
 
     if (duplicate) {
-        throw new Error('You already have a booking for this car on these dates')
+        throw new Error('You already have a booking request for this car on these dates')
     }
 
-    const conflict = await Booking.findOne({
+    const confirmedConflict = await Booking.findOne({
         where: {
             carId,
-            status: {
-                [Op.in]: ['pending', 'confirmed']
-            },
+            status: 'confirmed',
             startDate: {
                 [Op.lte]: endDate
             },
@@ -84,15 +99,19 @@ const createBooking = async data => {
         }
     })
 
-    if (conflict) {
-        throw new Error(`This car is already booked from ${conflict.startDate} to ${conflict.endDate}`)
+    if (confirmedConflict) {
+        throw new Error(
+            `This car is already booked from ${confirmedConflict.startDate} to ${confirmedConflict.endDate}`
+        )
     }
 
     const days = Math.ceil(
-        (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
+        (end.getTime() - start.getTime()) /
+        (1000 * 60 * 60 * 24)
     )
 
-    const totalAmount = days * Number(car.pricePerDay)
+    const totalAmount =
+        days * Number(car.pricePerDay)
 
     return await Booking.create({
         userId,
@@ -125,18 +144,59 @@ const confirmBooking = async bookingId => {
         }
     }
 
+    const car = await Car.findByPk(booking.carId)
+
+    if (!car) {
+        throw new Error('Car not found')
+    }
+
+    if (!car.availability || car.status === 'maintenance') {
+        throw new Error('Car is currently unavailable')
+    }
+
+    const conflict = await Booking.findOne({
+        where: {
+            id: {
+                [Op.ne]: booking.id
+            },
+            carId: booking.carId,
+            status: 'confirmed',
+            startDate: {
+                [Op.lte]: booking.endDate
+            },
+            endDate: {
+                [Op.gte]: booking.startDate
+            }
+        }
+    })
+
+    if (conflict) {
+        throw new Error(
+            `This car is already confirmed from ${conflict.startDate} to ${conflict.endDate}`
+        )
+    }
+
     await booking.update({
         status: 'confirmed'
     })
 
-    await Car.update(
+    await Booking.update(
         {
-            status: 'booked',
-            availability: false
+            status: 'cancelled'
         },
         {
             where: {
-                id: booking.carId
+                id: {
+                    [Op.ne]: booking.id
+                },
+                carId: booking.carId,
+                status: 'pending',
+                startDate: {
+                    [Op.lte]: booking.endDate
+                },
+                endDate: {
+                    [Op.gte]: booking.startDate
+                }
             }
         }
     )
@@ -152,6 +212,10 @@ const updateBooking = async (id, data) => {
 
     if (!booking) {
         throw new Error('Booking not found')
+    }
+
+    if (data.status === 'confirmed') {
+        throw new Error('Use the confirm booking action to confirm a request')
     }
 
     await booking.update(data)
@@ -204,7 +268,9 @@ const getBookingById = async id => {
         throw new Error('Booking not found')
     }
 
-    const [result] = await attachCars([booking])
+    const [result] = await attachCars([
+        booking
+    ])
 
     return result
 }
