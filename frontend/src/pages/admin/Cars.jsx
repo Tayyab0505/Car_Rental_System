@@ -25,17 +25,33 @@ const emptyForm = {
 const countries = Object.keys(locations)
 const categories = ['SUV', 'Sedan', 'Hatchback', 'Luxury', 'Coupe', 'Pickup', 'Van']
 
+const imageSlots = [
+    { fileKey: 'image', formKey: 'imageUrl', label: 'Main Photo' },
+    { fileKey: 'image2', formKey: 'imageUrl2', label: 'Photo 2' },
+    { fileKey: 'image3', formKey: 'imageUrl3', label: 'Photo 3' }
+]
+
 const statusConfig = {
     available: { label: 'Available', classes: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
     booked: { label: 'Booked', classes: 'bg-blue-50 text-blue-700 border-blue-100' },
     maintenance: { label: 'Maintenance', classes: 'bg-amber-50 text-amber-700 border-amber-100' }
 }
 
-const imageFields = [
-    ['Main Image URL', 'imageUrl'],
-    ['Image URL 2', 'imageUrl2'],
-    ['Image URL 3', 'imageUrl3']
-]
+const backendUrl = (API.defaults.baseURL || '').replace(/\/api\/?$/, '')
+
+function getImageUrl(value) {
+    if (!value) return ''
+
+    if (
+        value.startsWith('http://') ||
+        value.startsWith('https://') ||
+        value.startsWith('data:')
+    ) {
+        return value
+    }
+
+    return `${backendUrl}${value}`
+}
 
 function getCarId(car) {
     return car?.id || car?._id
@@ -54,7 +70,7 @@ function getPriceBounds(cars) {
 
 function FleetStat({ label, value, subtext, icon, iconClass }) {
     return (
-        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-[0_10px_24px_rgba(15,23,42,0.04)] px-5 py-5">
+        <div className="bg-white rounded-[24px] border border-slate-200/80 shadow-[0_10px_24px_rgba(15,23,42,0.04)] px-5 py-5">
             <div className="flex items-start justify-between gap-4">
                 <div>
                     <p className="text-[28px] leading-none font-bold text-slate-900">{value}</p>
@@ -80,7 +96,12 @@ function DetailBadge({ icon, label }) {
 }
 
 function CarSlider({ car }) {
-    const images = [car.imageUrl, car.imageUrl2, car.imageUrl3].filter(Boolean)
+    const images = [
+        getImageUrl(car.imageUrl),
+        getImageUrl(car.imageUrl2),
+        getImageUrl(car.imageUrl3)
+    ].filter(Boolean)
+
     const [current, setCurrent] = useState(0)
     const [errored, setErrored] = useState({})
 
@@ -118,31 +139,28 @@ function CarSlider({ car }) {
             <img
                 src={validImages[index].src}
                 alt={`${car.brand} ${car.model}`}
-                onError={() => setErrored(currentErrors => ({ ...currentErrors, [validImages[index].index]: true }))}
+                onError={() => setErrored(currentErrors => ({
+                    ...currentErrors,
+                    [validImages[index].index]: true
+                }))}
                 className="size-full object-cover group-hover:scale-[1.03] transition duration-500"
             />
 
             <div className="absolute inset-0 bg-linear-to-t from-slate-950/50 via-slate-900/10 to-transparent" />
 
             {car.category && (
-                <span className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-white/18 backdrop-blur-md border border-white/20 text-white text-[11px] font-semibold">
+                <span className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/20 text-white text-[11px] font-semibold">
                     {car.category}
                 </span>
             )}
 
             {validImages.length > 1 && (
                 <>
-                    <button
-                        onClick={previousImage}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 size-8 rounded-full bg-slate-950/45 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
-                    >
+                    <button onClick={previousImage} className="absolute left-3 top-1/2 -translate-y-1/2 size-8 rounded-full bg-slate-950/45 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
                         <svg className="size-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /></svg>
                     </button>
 
-                    <button
-                        onClick={nextImage}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 size-8 rounded-full bg-slate-950/45 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
-                    >
+                    <button onClick={nextImage} className="absolute right-3 top-1/2 -translate-y-1/2 size-8 rounded-full bg-slate-950/45 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
                         <svg className="size-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" /></svg>
                     </button>
 
@@ -173,10 +191,25 @@ export default function AdminCars() {
     const [editId, setEditId] = useState(null)
     const [deleteModal, setDeleteModal] = useState(null)
 
+    const [imageFiles, setImageFiles] = useState({
+        image: null,
+        image2: null,
+        image3: null
+    })
+
+    const [imagePreviews, setImagePreviews] = useState({
+        image: '',
+        image2: '',
+        image3: ''
+    })
+
     const [saving, setSaving] = useState(false)
     const [deleting, setDeleting] = useState(false)
 
-    const [message, setMessage] = useState({ text: '', type: 'success' })
+    const [message, setMessage] = useState({
+        text: '',
+        type: 'success'
+    })
 
     const [searchTerm, setSearchTerm] = useState('')
     const [filtersOpen, setFiltersOpen] = useState(false)
@@ -196,7 +229,7 @@ export default function AdminCars() {
     useEffect(() => {
         const fetchCars = async () => {
             try {
-                const res = await API.get('/findAllCar')
+                const res = await API.get('/findAllAdminCars')
                 const data = Array.isArray(res.data) ? res.data : []
                 const bounds = getPriceBounds(data)
 
@@ -207,7 +240,11 @@ export default function AdminCars() {
                 setSliderMax(bounds.max)
             } catch (error) {
                 console.error('API Error:', error.response?.data || error.message)
-                setMessage({ text: 'Failed to load cars. Check backend server.', type: 'error' })
+
+                setMessage({
+                    text: 'Failed to load cars. Check backend server.',
+                    type: 'error'
+                })
             } finally {
                 setLoading(false)
             }
@@ -216,16 +253,28 @@ export default function AdminCars() {
         fetchCars()
     }, [])
 
-    const brands = useMemo(() => ['all', ...new Set(cars.map(car => car.brand).filter(Boolean))], [cars])
+    const brands = useMemo(() => {
+        return ['all', ...new Set(cars.map(car => car.brand).filter(Boolean))]
+    }, [cars])
 
-    const availableCountries = useMemo(() => ['all', ...new Set(cars.map(car => car.country).filter(Boolean))], [cars])
+    const availableCountries = useMemo(() => {
+        return ['all', ...new Set(cars.map(car => car.country).filter(Boolean))]
+    }, [cars])
 
     const availableCities = useMemo(() => {
         if (countryFilter === 'all') {
             return ['all', ...new Set(cars.map(car => car.city).filter(Boolean))]
         }
 
-        return ['all', ...new Set(cars.filter(car => car.country === countryFilter).map(car => car.city).filter(Boolean))]
+        return [
+            'all',
+            ...new Set(
+                cars
+                    .filter(car => car.country === countryFilter)
+                    .map(car => car.city)
+                    .filter(Boolean)
+            )
+        ]
     }, [cars, countryFilter])
 
     const stats = useMemo(() => ({
@@ -262,7 +311,18 @@ export default function AdminCars() {
         if (sortOrder === 'desc') list.sort((a, b) => Number(b.pricePerDay) - Number(a.pricePerDay))
 
         return list
-    }, [cars, searchTerm, brandFilter, countryFilter, cityFilter, categoryFilter, statusFilter, sliderMin, sliderMax, sortOrder])
+    }, [
+        cars,
+        searchTerm,
+        brandFilter,
+        countryFilter,
+        cityFilter,
+        categoryFilter,
+        statusFilter,
+        sliderMin,
+        sliderMax,
+        sortOrder
+    ])
 
     const isFiltered =
         searchTerm !== '' ||
@@ -276,7 +336,7 @@ export default function AdminCars() {
         sliderMax !== maxPrice
 
     const refreshCars = async () => {
-        const res = await API.get('/findAllCar')
+        const res = await API.get('/findAllAdminCars')
         const data = Array.isArray(res.data) ? res.data : []
         const bounds = getPriceBounds(data)
 
@@ -291,7 +351,10 @@ export default function AdminCars() {
         setMessage({ text, type })
 
         setTimeout(() => {
-            setMessage({ text: '', type: 'success' })
+            setMessage({
+                text: '',
+                type: 'success'
+            })
         }, 2500)
     }
 
@@ -309,6 +372,19 @@ export default function AdminCars() {
 
     const openAdd = () => {
         setForm({ ...emptyForm })
+
+        setImageFiles({
+            image: null,
+            image2: null,
+            image3: null
+        })
+
+        setImagePreviews({
+            image: '',
+            image2: '',
+            image3: ''
+        })
+
         setEditId(null)
         setShowModal(true)
     }
@@ -334,6 +410,18 @@ export default function AdminCars() {
             seats: car.seats || ''
         })
 
+        setImageFiles({
+            image: null,
+            image2: null,
+            image3: null
+        })
+
+        setImagePreviews({
+            image: getImageUrl(car.imageUrl),
+            image2: getImageUrl(car.imageUrl2),
+            image3: getImageUrl(car.imageUrl3)
+        })
+
         setEditId(getCarId(car))
         setShowModal(true)
     }
@@ -346,26 +434,111 @@ export default function AdminCars() {
         }))
     }
 
+    const handleImageChange = (fileKey, file) => {
+        if (!file) return
+
+        const allowedTypes = [
+            'image/jpeg',
+            'image/png',
+            'image/webp'
+        ]
+
+        if (!allowedTypes.includes(file.type)) {
+            showToast('Only JPG, PNG and WEBP images are allowed.', 'error')
+            return
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            showToast('Image must be smaller than 5MB.', 'error')
+            return
+        }
+
+        const reader = new FileReader()
+
+        reader.onload = () => {
+            setImagePreviews(current => ({
+                ...current,
+                [fileKey]: reader.result
+            }))
+        }
+
+        reader.readAsDataURL(file)
+
+        setImageFiles(current => ({
+            ...current,
+            [fileKey]: file
+        }))
+    }
+
+    const removeImage = (fileKey, formKey) => {
+        setImageFiles(current => ({
+            ...current,
+            [fileKey]: null
+        }))
+
+        setImagePreviews(current => ({
+            ...current,
+            [fileKey]: ''
+        }))
+
+        setForm(current => ({
+            ...current,
+            [formKey]: ''
+        }))
+    }
+
     const handleSave = async () => {
-        if (!form.brand.trim() || !form.model.trim() || !form.pricePerDay || !form.category || !form.country || !form.city) {
+        if (
+            !form.brand.trim() ||
+            !form.model.trim() ||
+            !form.pricePerDay ||
+            !form.category ||
+            !form.country ||
+            !form.city
+        ) {
             showToast('Please complete all required car details.', 'error')
             return
         }
+
+        if (!form.imageUrl && !imageFiles.image) {
+            showToast('Please select a main car photo.', 'error')
+            return
+        }
+
+        const data = new FormData()
+
+        Object.entries(form).forEach(([key, value]) => {
+            data.append(key, value ?? '')
+        })
+
+        Object.entries(imageFiles).forEach(([key, file]) => {
+            if (file) data.append(key, file)
+        })
 
         setSaving(true)
 
         try {
             if (editId) {
-                await API.put(`/updateCar/${editId}`, form)
+                await API.put(`/updateCar/${editId}`, data)
             } else {
-                await API.post('/addCar', form)
+                await API.post('/addCar', data)
             }
 
             await refreshCars()
             setShowModal(false)
-            showToast(editId ? 'Car updated successfully.' : 'Car added successfully.')
+
+            showToast(
+                editId
+                    ? 'Car updated successfully.'
+                    : 'Car added successfully.'
+            )
         } catch (error) {
-            showToast(error.response?.data?.message || 'Failed to save car.', 'error')
+            showToast(
+                error.response?.data?.error ||
+                error.response?.data?.message ||
+                'Failed to save car.',
+                'error'
+            )
         } finally {
             setSaving(false)
         }
@@ -379,10 +552,16 @@ export default function AdminCars() {
         try {
             await API.delete(`/deleteCar/${getCarId(deleteModal)}`)
             await refreshCars()
+
             setDeleteModal(null)
             showToast('Car deleted successfully.')
         } catch (error) {
-            showToast(error.response?.data?.message || 'Failed to delete car.', 'error')
+            showToast(
+                error.response?.data?.error ||
+                error.response?.data?.message ||
+                'Failed to delete car.',
+                'error'
+            )
         } finally {
             setDeleting(false)
         }
@@ -408,7 +587,7 @@ export default function AdminCars() {
         <div className="min-h-full bg-[#f4f7fb]">
             <div className="max-w-screen-2xl mx-auto px-5 py-6 md:px-8 md:py-7">
                 <section className="relative overflow-hidden rounded-[30px] border border-slate-200/70 bg-linear-to-r from-[#0f172a] via-[#1e293b] to-[#334155] px-6 py-6 md:px-8 md:py-7 shadow-[0_18px_40px_rgba(15,23,42,0.12)]">
-                    <div className="absolute -top-20 right-10 size-56 rounded-full bg-white/8 blur-3xl" />
+                    <div className="absolute -top-20 right-10 size-56 rounded-full bg-white/10 blur-3xl" />
                     <div className="absolute -bottom-20 left-1/3 size-60 rounded-full bg-sky-400/10 blur-3xl" />
 
                     <div className="relative flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6">
@@ -422,21 +601,18 @@ export default function AdminCars() {
 
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                             <div className="grid grid-cols-2 gap-3">
-                                <div className="min-w-28 rounded-[22px] border border-white/10 bg-white/8 backdrop-blur-md px-4 py-4">
+                                <div className="min-w-28 rounded-[22px] border border-white/10 bg-white/10 backdrop-blur-md px-4 py-4">
                                     <p className="text-2xl font-bold text-white">{stats.available}</p>
                                     <p className="text-sm text-slate-300 mt-1">Cars Available</p>
                                 </div>
 
-                                <div className="min-w-28 rounded-[22px] border border-white/10 bg-white/8 backdrop-blur-md px-4 py-4">
+                                <div className="min-w-28 rounded-[22px] border border-white/10 bg-white/10 backdrop-blur-md px-4 py-4">
                                     <p className="text-2xl font-bold text-white">{stats.booked}</p>
                                     <p className="text-sm text-slate-300 mt-1">Currently Booked</p>
                                 </div>
                             </div>
 
-                            <button
-                                onClick={openAdd}
-                                className="h-12 px-5 rounded-2xl bg-white text-slate-900 text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shadow-black/10 hover:-translate-y-0.5 transition"
-                            >
+                            <button onClick={openAdd} className="h-12 px-5 rounded-2xl bg-white text-slate-900 text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shadow-black/10 hover:-translate-y-0.5 transition">
                                 <svg className="size-4" fill="none" stroke="currentColor" strokeWidth={2.2} viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
                                 Add New Car
                             </button>
@@ -500,20 +676,14 @@ export default function AdminCars() {
                             </div>
 
                             <div className="flex items-center gap-3">
-                                <button
-                                    onClick={() => setFiltersOpen(current => !current)}
-                                    className={`h-13 px-5 rounded-2xl border text-sm font-semibold flex items-center gap-2 transition ${filtersOpen || isFiltered ? 'bg-sky-50 text-sky-700 border-sky-100' : 'bg-white text-slate-600 border-slate-200 hover:border-sky-200 hover:text-sky-600'}`}
-                                >
+                                <button onClick={() => setFiltersOpen(current => !current)} className={`h-13 px-5 rounded-2xl border text-sm font-semibold flex items-center gap-2 transition ${filtersOpen || isFiltered ? 'bg-sky-50 text-sky-700 border-sky-100' : 'bg-white text-slate-600 border-slate-200 hover:border-sky-200 hover:text-sky-600'}`}>
                                     <svg className="size-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M3 6h18M6 12h12M10 18h4" /></svg>
                                     Filters
                                     {isFiltered && <span className="size-2 rounded-full bg-sky-500" />}
                                 </button>
 
                                 {isFiltered && (
-                                    <button
-                                        onClick={resetFilters}
-                                        className="h-13 px-4 rounded-2xl text-sm font-medium text-slate-500 hover:text-sky-600 hover:bg-sky-50 transition"
-                                    >
+                                    <button onClick={resetFilters} className="h-13 px-4 rounded-2xl text-sm font-medium text-slate-500 hover:text-sky-600 hover:bg-sky-50 transition">
                                         Reset
                                     </button>
                                 )}
@@ -564,12 +734,7 @@ export default function AdminCars() {
 
                                     <div>
                                         <label className={labelClass}>City</label>
-                                        <select
-                                            value={cityFilter}
-                                            onChange={e => setCityFilter(e.target.value)}
-                                            disabled={availableCities.length <= 1}
-                                            className={`${selectClass} disabled:opacity-50 disabled:cursor-not-allowed`}
-                                        >
+                                        <select value={cityFilter} onChange={e => setCityFilter(e.target.value)} disabled={availableCities.length <= 1} className={`${selectClass} disabled:opacity-50 disabled:cursor-not-allowed`}>
                                             {availableCities.map(city => <option key={city} value={city}>{city === 'all' ? 'All cities' : city}</option>)}
                                         </select>
                                     </div>
@@ -599,10 +764,7 @@ export default function AdminCars() {
                                             <>
                                                 <div className="relative h-5 flex items-center">
                                                     <div className="absolute w-full h-1.5 rounded-full bg-slate-200">
-                                                        <div
-                                                            className="absolute h-1.5 rounded-full bg-linear-to-r from-sky-500 to-blue-500"
-                                                            style={{ left: `${leftPct}%`, right: `${rightPct}%` }}
-                                                        />
+                                                        <div className="absolute h-1.5 rounded-full bg-linear-to-r from-sky-500 to-blue-500" style={{ left: `${leftPct}%`, right: `${rightPct}%` }} />
                                                     </div>
 
                                                     <input
@@ -681,10 +843,7 @@ export default function AdminCars() {
                             const status = statusConfig[carStatus] || statusConfig.available
 
                             return (
-                                <div
-                                    key={getCarId(car)}
-                                    className="bg-white rounded-[28px] border border-slate-200/80 overflow-hidden shadow-[0_12px_34px_rgba(15,23,42,0.05)] hover:shadow-[0_20px_45px_rgba(15,23,42,0.10)] hover:-translate-y-1 transition duration-300"
-                                >
+                                <div key={getCarId(car)} className="bg-white rounded-[28px] border border-slate-200/80 overflow-hidden shadow-[0_12px_34px_rgba(15,23,42,0.05)] hover:shadow-[0_20px_45px_rgba(15,23,42,0.10)] hover:-translate-y-1 transition duration-300">
                                     <CarSlider car={car} />
 
                                     <div className="p-5">
@@ -694,7 +853,7 @@ export default function AdminCars() {
 
                                                 {(car.city || car.country) && (
                                                     <div className="flex items-center gap-1.5 mt-2">
-                                                        <svg className="size-3.5 text-slate-400 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" /></svg>
+                                                        <svg className="size-3.5 text-slate-400 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5 1.12 2.5 2.5 2.5z" /></svg>
                                                         <span className="text-xs text-slate-400 truncate">{[car.city, car.country].filter(Boolean).join(', ')}</span>
                                                     </div>
                                                 )}
@@ -730,17 +889,11 @@ export default function AdminCars() {
                                         )}
 
                                         <div className="grid grid-cols-2 gap-2 mt-5 pt-5 border-t border-slate-100">
-                                            <button
-                                                onClick={() => openEdit(car)}
-                                                className="h-11 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 transition"
-                                            >
+                                            <button onClick={() => openEdit(car)} className="h-11 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 transition">
                                                 Edit Details
                                             </button>
 
-                                            <button
-                                                onClick={() => setDeleteModal(car)}
-                                                className="h-11 rounded-xl border border-red-100 text-red-500 text-sm font-semibold hover:bg-red-50 hover:border-red-200 transition"
-                                            >
+                                            <button onClick={() => setDeleteModal(car)} className="h-11 rounded-xl border border-red-100 text-red-500 text-sm font-semibold hover:bg-red-50 hover:border-red-200 transition">
                                                 Delete
                                             </button>
                                         </div>
@@ -760,34 +913,12 @@ export default function AdminCars() {
                                     <h3 className="text-2xl font-bold text-slate-900 mt-1">{editId ? 'Edit Car' : 'Add New Car'}</h3>
                                 </div>
 
-                                <button
-                                    onClick={() => setShowModal(false)}
-                                    className="size-10 rounded-xl border border-slate-200 text-slate-500 flex items-center justify-center hover:bg-slate-50"
-                                >
+                                <button onClick={() => setShowModal(false)} className="size-10 rounded-xl border border-slate-200 text-slate-500 flex items-center justify-center hover:bg-slate-50">
                                     <svg className="size-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" /></svg>
                                 </button>
                             </div>
 
                             <div className="overflow-y-auto p-6">
-                                <div className="grid grid-cols-3 gap-3 mb-6">
-                                    {[form.imageUrl, form.imageUrl2, form.imageUrl3].map((url, index) => (
-                                        <div key={`preview-${index}`} className="h-24 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 flex items-center justify-center">
-                                            {url ? (
-                                                <img
-                                                    src={url}
-                                                    alt={`Car preview ${index + 1}`}
-                                                    onError={e => {
-                                                        e.currentTarget.style.display = 'none'
-                                                    }}
-                                                    className="size-full object-cover"
-                                                />
-                                            ) : (
-                                                <span className="text-xs text-slate-400">Photo {index + 1}</span>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-
                                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-[0.18em] mb-4">Basic Information</p>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -833,16 +964,59 @@ export default function AdminCars() {
                                     </div>
                                 </div>
 
-                                <p className="text-xs font-semibold text-slate-400 uppercase tracking-[0.18em] mb-4 mt-7">Images</p>
+                                <p className="text-xs font-semibold text-slate-400 uppercase tracking-[0.18em] mb-4 mt-7">Car Photos</p>
 
-                                <div className="space-y-4">
-                                    {imageFields.map(([label, key]) => (
-                                        <div key={key}>
-                                            <label className={labelClass}>{label}</label>
-                                            <input type="text" placeholder="https://..." value={form[key]} onChange={e => setForm({ ...form, [key]: e.target.value })} className={inputClass} />
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    {imageSlots.map(slot => (
+                                        <div key={slot.fileKey}>
+                                            <p className="text-xs font-medium text-slate-500 mb-2">
+                                                {slot.label}{slot.fileKey === 'image' && ' *'}
+                                            </p>
+
+                                            <div className="relative h-36 rounded-2xl border border-dashed border-slate-300 bg-slate-50 overflow-hidden group">
+                                                {imagePreviews[slot.fileKey] ? (
+                                                    <>
+                                                        <img src={imagePreviews[slot.fileKey]} alt={slot.label} className="size-full object-cover" />
+
+                                                        <div className="absolute inset-0 bg-slate-950/55 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
+                                                            <label htmlFor={slot.fileKey} className="h-9 px-3 rounded-xl bg-white text-slate-700 text-xs font-semibold flex items-center justify-center cursor-pointer">
+                                                                Replace
+                                                            </label>
+
+                                                            <button type="button" onClick={() => removeImage(slot.fileKey, slot.formKey)} className="h-9 px-3 rounded-xl bg-red-500 text-white text-xs font-semibold">
+                                                                Remove
+                                                            </button>
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <label htmlFor={slot.fileKey} className="size-full flex flex-col items-center justify-center cursor-pointer hover:bg-sky-50 transition">
+                                                        <div className="size-10 rounded-xl bg-white border border-slate-200 text-sky-600 flex items-center justify-center shadow-sm">
+                                                            <svg className="size-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+                                                        </div>
+
+                                                        <p className="text-xs font-semibold text-slate-600 mt-3">Choose Photo</p>
+                                                        <p className="text-[10px] text-slate-400 mt-1">JPG, PNG or WEBP</p>
+                                                    </label>
+                                                )}
+
+                                                <input
+                                                    id={slot.fileKey}
+                                                    type="file"
+                                                    accept="image/jpeg,image/png,image/webp"
+                                                    onChange={e => {
+                                                        handleImageChange(slot.fileKey, e.target.files?.[0])
+                                                        e.target.value = ''
+                                                    }}
+                                                    className="hidden"
+                                                />
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
+
+                                <p className="text-[11px] text-slate-400 mt-3">
+                                    Upload up to 3 photos. Maximum size is 5MB per image.
+                                </p>
 
                                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-[0.18em] mb-4 mt-7">Specifications</p>
 
@@ -889,11 +1063,7 @@ export default function AdminCars() {
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
                                         <label className={labelClass}>Country *</label>
-                                        <select
-                                            value={form.country}
-                                            onChange={e => setForm({ ...form, country: e.target.value, city: '' })}
-                                            className={selectClass}
-                                        >
+                                        <select value={form.country} onChange={e => setForm({ ...form, country: e.target.value, city: '' })} className={selectClass}>
                                             <option value="">Select country</option>
                                             {countries.map(country => <option key={country} value={country}>{country}</option>)}
                                         </select>
@@ -901,12 +1071,7 @@ export default function AdminCars() {
 
                                     <div>
                                         <label className={labelClass}>City *</label>
-                                        <select
-                                            value={form.city}
-                                            onChange={e => setForm({ ...form, city: e.target.value })}
-                                            disabled={!form.country}
-                                            className={`${selectClass} disabled:opacity-50 disabled:cursor-not-allowed`}
-                                        >
+                                        <select value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} disabled={!form.country} className={`${selectClass} disabled:opacity-50 disabled:cursor-not-allowed`}>
                                             <option value="">{form.country ? 'Select city' : 'Select country first'}</option>
                                             {form.country && locations[form.country]?.map(city => <option key={city} value={city}>{city}</option>)}
                                         </select>
@@ -915,13 +1080,7 @@ export default function AdminCars() {
 
                                 <div className="mt-6 p-4 rounded-2xl border border-slate-200 bg-slate-50">
                                     <label className="flex items-center gap-3">
-                                        <input
-                                            type="checkbox"
-                                            checked={form.availability}
-                                            disabled={form.status !== 'available'}
-                                            onChange={e => setForm({ ...form, availability: e.target.checked })}
-                                            className="size-4 accent-sky-600 disabled:opacity-50"
-                                        />
+                                        <input type="checkbox" checked={form.availability} disabled={form.status !== 'available'} onChange={e => setForm({ ...form, availability: e.target.checked })} className="size-4 accent-sky-600 disabled:opacity-50" />
 
                                         <div>
                                             <p className="text-sm font-medium text-slate-700">Available for booking</p>
@@ -932,19 +1091,11 @@ export default function AdminCars() {
                             </div>
 
                             <div className="px-6 py-5 border-t border-slate-100 bg-white flex gap-3 shrink-0">
-                                <button
-                                    onClick={() => setShowModal(false)}
-                                    disabled={saving}
-                                    className="flex-1 h-12 rounded-2xl border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-slate-50 disabled:opacity-50"
-                                >
+                                <button onClick={() => setShowModal(false)} disabled={saving} className="flex-1 h-12 rounded-2xl border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-slate-50 disabled:opacity-50">
                                     Cancel
                                 </button>
 
-                                <button
-                                    onClick={handleSave}
-                                    disabled={saving}
-                                    className="flex-1 h-12 rounded-2xl bg-linear-to-r from-[#0284c7] to-[#2563eb] text-white text-sm font-semibold shadow-lg shadow-sky-500/20 hover:-translate-y-0.5 transition disabled:opacity-60"
-                                >
+                                <button onClick={handleSave} disabled={saving} className="flex-1 h-12 rounded-2xl bg-linear-to-r from-sky-600 to-blue-600 text-white text-sm font-semibold shadow-lg shadow-sky-500/20 hover:-translate-y-0.5 transition disabled:opacity-60 disabled:translate-y-0">
                                     {saving ? 'Saving...' : editId ? 'Save Changes' : 'Add Car'}
                                 </button>
                             </div>
@@ -953,7 +1104,7 @@ export default function AdminCars() {
                 )}
 
                 {deleteModal && (
-                    <div className="fixed inset-0 z-60 bg-slate-950/65 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="fixed inset-0 z-[60] bg-slate-950/65 backdrop-blur-sm flex items-center justify-center p-4">
                         <div className="w-full max-w-md bg-white rounded-[28px] shadow-2xl p-6">
                             <div className="size-12 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center">
                                 <svg className="size-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
@@ -962,23 +1113,17 @@ export default function AdminCars() {
                             <h3 className="text-xl font-bold text-slate-900 mt-5">Delete Car?</h3>
 
                             <p className="text-sm text-slate-500 mt-2 leading-6">
-                                Are you sure you want to delete <span className="font-semibold text-slate-700">{deleteModal.brand} {deleteModal.model}</span>? This action cannot be undone.
+                                Are you sure you want to delete{' '}
+                                <span className="font-semibold text-slate-700">{deleteModal.brand} {deleteModal.model}</span>?
+                                {' '}This action cannot be undone.
                             </p>
 
                             <div className="grid grid-cols-2 gap-3 mt-6">
-                                <button
-                                    onClick={() => setDeleteModal(null)}
-                                    disabled={deleting}
-                                    className="h-11 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold disabled:opacity-50"
-                                >
+                                <button onClick={() => setDeleteModal(null)} disabled={deleting} className="h-11 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold disabled:opacity-50">
                                     Keep Car
                                 </button>
 
-                                <button
-                                    onClick={handleDelete}
-                                    disabled={deleting}
-                                    className="h-11 rounded-xl bg-red-500 text-white text-sm font-semibold hover:bg-red-600 disabled:opacity-60"
-                                >
+                                <button onClick={handleDelete} disabled={deleting} className="h-11 rounded-xl bg-red-500 text-white text-sm font-semibold hover:bg-red-600 disabled:opacity-60">
                                     {deleting ? 'Deleting...' : 'Yes, Delete'}
                                 </button>
                             </div>

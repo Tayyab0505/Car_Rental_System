@@ -2,6 +2,14 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import API from '../../api/axios'
 
+const backendUrl = (API.defaults.baseURL || '').replace(/\/api\/?$/, '')
+
+function getImageUrl(value) {
+    if (!value) return ''
+    if (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('data:')) return value
+    return `${backendUrl}${value}`
+}
+
 function formatDate(value) {
     if (!value) return '-'
 
@@ -50,7 +58,6 @@ function getCarId(booking) {
 function getCarName(booking) {
     const brand = booking?.car?.brand || booking?.brand || ''
     const model = booking?.car?.model || booking?.model || ''
-
     const name = `${brand} ${model}`.trim()
 
     if (name) return name
@@ -59,7 +66,7 @@ function getCarName(booking) {
 }
 
 function getCarImage(booking) {
-    return booking?.car?.imageUrl || booking?.imageUrl || ''
+    return getImageUrl(booking?.car?.imageUrl || booking?.imageUrl || '')
 }
 
 function getLocation(booking) {
@@ -79,18 +86,12 @@ function getDays(startDate, endDate) {
     const start = new Date(`${startDate}T00:00:00`)
     const end = new Date(`${endDate}T00:00:00`)
 
-    if (
-        Number.isNaN(start.getTime()) ||
-        Number.isNaN(end.getTime())
-    ) {
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
         return 0
     }
 
     const difference = end.getTime() - start.getTime()
-
-    const days = Math.ceil(
-        difference / (1000 * 60 * 60 * 24)
-    )
+    const days = Math.ceil(difference / (1000 * 60 * 60 * 24))
 
     return days > 0 ? days : 0
 }
@@ -109,13 +110,7 @@ function StatusTimeline({ status }) {
             <div className="flex items-center mt-5">
                 <div className="flex flex-col items-center">
                     <div className="size-9 rounded-full bg-blue-600 text-white flex items-center justify-center">
-                        <svg
-                            className="size-4"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth={2.5}
-                            viewBox="0 0 24 24"
-                        >
+                        <svg className="size-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                             <path d="M5 12l4 4L19 6" />
                         </svg>
                     </div>
@@ -125,72 +120,28 @@ function StatusTimeline({ status }) {
                     </p>
                 </div>
 
-                <div
-                    className={`h-1 flex-1 mx-3 rounded-full ${confirmed
-                        ? 'bg-emerald-500'
-                        : cancelled
-                            ? 'bg-red-400'
-                            : 'bg-slate-200'
-                        }`}
-                />
+                <div className={`h-1 flex-1 mx-3 rounded-full ${confirmed ? 'bg-emerald-500' : cancelled ? 'bg-red-400' : 'bg-slate-200'}`} />
 
                 <div className="flex flex-col items-center">
-                    <div
-                        className={`size-9 rounded-full flex items-center justify-center ${confirmed
-                            ? 'bg-emerald-500 text-white'
-                            : cancelled
-                                ? 'bg-red-500 text-white'
-                                : 'bg-slate-100 text-slate-400 border border-slate-200'
-                            }`}
-                    >
+                    <div className={`size-9 rounded-full flex items-center justify-center ${confirmed ? 'bg-emerald-500 text-white' : cancelled ? 'bg-red-500 text-white' : 'bg-slate-100 text-slate-400 border border-slate-200'}`}>
                         {cancelled ? (
-                            <svg
-                                className="size-4"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth={2.5}
-                                viewBox="0 0 24 24"
-                            >
+                            <svg className="size-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                                 <path d="M18 6L6 18M6 6l12 12" />
                             </svg>
                         ) : confirmed ? (
-                            <svg
-                                className="size-4"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth={2.5}
-                                viewBox="0 0 24 24"
-                            >
+                            <svg className="size-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                                 <path d="M5 12l4 4L19 6" />
                             </svg>
                         ) : (
-                            <svg
-                                className="size-4"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth={2}
-                                viewBox="0 0 24 24"
-                            >
+                            <svg className="size-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                                 <circle cx="12" cy="12" r="9" />
                                 <path d="M12 8v4l3 2" />
                             </svg>
                         )}
                     </div>
 
-                    <p
-                        className={`text-xs font-medium mt-2 whitespace-nowrap ${confirmed
-                            ? 'text-emerald-600'
-                            : cancelled
-                                ? 'text-red-500'
-                                : 'text-slate-500'
-                            }`}
-                    >
-                        {confirmed
-                            ? 'Confirmed'
-                            : cancelled
-                                ? 'Cancelled'
-                                : 'Waiting for Admin'
-                        }
+                    <p className={`text-xs font-medium mt-2 whitespace-nowrap ${confirmed ? 'text-emerald-600' : cancelled ? 'text-red-500' : 'text-slate-500'}`}>
+                        {confirmed ? 'Confirmed' : cancelled ? 'Cancelled' : 'Waiting for Admin'}
                     </p>
                 </div>
             </div>
@@ -202,13 +153,7 @@ function EmptyState({ onBrowse }) {
     return (
         <div className="bg-white rounded-3xl border border-slate-200 shadow-sm px-6 py-16 text-center">
             <div className="size-20 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto">
-                <svg
-                    className="size-10"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={1.8}
-                    viewBox="0 0 24 24"
-                >
+                <svg className="size-10" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                     <rect x="3" y="4" width="18" height="18" rx="2" />
                     <path d="M16 2v4M8 2v4M3 10h18" />
                 </svg>
@@ -222,10 +167,7 @@ function EmptyState({ onBrowse }) {
                 You have not made any booking requests yet. Browse available cars and send your first request.
             </p>
 
-            <button
-                onClick={onBrowse}
-                className="mt-6 px-6 h-12 rounded-xl bg-linear-to-r from-[#2563eb] via-[#1687f8] to-[#0ea5e9] text-white text-sm font-semibold shadow-md shadow-blue-500/20"
-            >
+            <button onClick={onBrowse} className="mt-6 px-6 h-12 rounded-xl bg-linear-to-r from-[#2563eb] via-[#1687f8] to-[#0ea5e9] text-white text-sm font-semibold shadow-md shadow-blue-500/20">
                 Browse Cars
             </button>
         </div>
@@ -237,6 +179,7 @@ export default function UserBookings() {
 
     const [bookings, setBookings] = useState([])
     const [loading, setLoading] = useState(true)
+
     const [error, setError] = useState('')
     const [message, setMessage] = useState('')
 
@@ -263,6 +206,7 @@ export default function UserBookings() {
             } catch (err) {
                 setError(
                     err.response?.data?.message ||
+                    err.response?.data?.error ||
                     'Unable to load bookings'
                 )
             } finally {
@@ -273,27 +217,19 @@ export default function UserBookings() {
         fetchBookings()
     }, [])
 
-    const stats = useMemo(() => {
-        return {
-            total: bookings.length,
-            pending: bookings.filter(
-                booking => booking.status === 'pending'
-            ).length,
-            confirmed: bookings.filter(
-                booking => booking.status === 'confirmed'
-            ).length,
-            cancelled: bookings.filter(
-                booking => booking.status === 'cancelled'
-            ).length
-        }
-    }, [bookings])
+    const stats = useMemo(() => ({
+        total: bookings.length,
+        pending: bookings.filter(booking => booking.status === 'pending').length,
+        confirmed: bookings.filter(booking => booking.status === 'confirmed').length,
+        cancelled: bookings.filter(booking => booking.status === 'cancelled').length
+    }), [bookings])
 
     const filteredBookings = useMemo(() => {
         let list = [...bookings]
 
         if (statusFilter !== 'all') {
-            list = list.filter(
-                booking => booking.status === statusFilter
+            list = list.filter(booking =>
+                booking.status === statusFilter
             )
         }
 
@@ -321,7 +257,10 @@ export default function UserBookings() {
         Math.ceil(filteredBookings.length / rowsPerPage)
     )
 
-    const safePage = Math.min(currentPage, totalPages)
+    const safePage = Math.min(
+        currentPage,
+        totalPages
+    )
 
     const paginatedBookings = useMemo(() => {
         const start = (safePage - 1) * rowsPerPage
@@ -370,6 +309,7 @@ export default function UserBookings() {
         } catch (err) {
             setError(
                 err.response?.data?.message ||
+                err.response?.data?.error ||
                 'Unable to cancel booking'
             )
         } finally {
@@ -378,22 +318,10 @@ export default function UserBookings() {
     }
 
     const statusTabs = [
-        {
-            key: 'all',
-            label: 'All'
-        },
-        {
-            key: 'pending',
-            label: 'Pending'
-        },
-        {
-            key: 'confirmed',
-            label: 'Confirmed'
-        },
-        {
-            key: 'cancelled',
-            label: 'Cancelled'
-        }
+        { key: 'all', label: 'All' },
+        { key: 'pending', label: 'Pending' },
+        { key: 'confirmed', label: 'Confirmed' },
+        { key: 'cancelled', label: 'Cancelled' }
     ]
 
     return (
@@ -423,6 +351,7 @@ export default function UserBookings() {
                                 <p className="text-white text-2xl font-bold">
                                     {stats.total}
                                 </p>
+
                                 <p className="text-slate-300 text-xs mt-1">
                                     Total
                                 </p>
@@ -432,6 +361,7 @@ export default function UserBookings() {
                                 <p className="text-white text-2xl font-bold">
                                     {stats.pending}
                                 </p>
+
                                 <p className="text-slate-300 text-xs mt-1">
                                     Pending
                                 </p>
@@ -441,6 +371,7 @@ export default function UserBookings() {
                                 <p className="text-white text-2xl font-bold">
                                     {stats.confirmed}
                                 </p>
+
                                 <p className="text-slate-300 text-xs mt-1">
                                     Confirmed
                                 </p>
@@ -450,6 +381,7 @@ export default function UserBookings() {
                                 <p className="text-white text-2xl font-bold">
                                     {stats.cancelled}
                                 </p>
+
                                 <p className="text-slate-300 text-xs mt-1">
                                     Cancelled
                                 </p>
@@ -463,13 +395,7 @@ export default function UserBookings() {
                         <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
                             <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1.3fr_auto] gap-3">
                                 <div className="relative">
-                                    <svg
-                                        className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-slate-400"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth={2}
-                                        viewBox="0 0 24 24"
-                                    >
+                                    <svg className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-slate-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                                         <circle cx="11" cy="11" r="8" />
                                         <path d="M21 21l-4.35-4.35" />
                                     </svg>
@@ -488,17 +414,7 @@ export default function UserBookings() {
 
                                 <div className="flex gap-2 overflow-x-auto">
                                     {statusTabs.map(tab => (
-                                        <button
-                                            key={tab.key}
-                                            onClick={() => {
-                                                setStatusFilter(tab.key)
-                                                setCurrentPage(1)
-                                            }}
-                                            className={`h-12 px-5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${statusFilter === tab.key
-                                                ? 'bg-linear-to-r from-[#2563eb] to-[#0ea5e9] text-white shadow-md shadow-blue-500/20'
-                                                : 'bg-white border border-slate-200 text-slate-600 hover:border-sky-400'
-                                                }`}
-                                        >
+                                        <button key={tab.key} onClick={() => { setStatusFilter(tab.key); setCurrentPage(1) }} className={`h-12 px-5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${statusFilter === tab.key ? 'bg-linear-to-r from-[#2563eb] to-[#0ea5e9] text-white shadow-md shadow-blue-500/20' : 'bg-white border border-slate-200 text-slate-600 hover:border-sky-400'}`}>
                                             {tab.label}
                                         </button>
                                     ))}
@@ -549,9 +465,7 @@ export default function UserBookings() {
                             </span>
                         </div>
                     ) : filteredBookings.length === 0 ? (
-                        <EmptyState
-                            onBrowse={() => navigate('/dashboard/cars')}
-                        />
+                        <EmptyState onBrowse={() => navigate('/dashboard/cars')} />
                     ) : (
                         <>
                             <div className="hidden xl:block bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
@@ -595,10 +509,7 @@ export default function UserBookings() {
 
                                         <tbody>
                                             {paginatedBookings.map(booking => (
-                                                <tr
-                                                    key={getBookingId(booking)}
-                                                    className="border-t border-slate-100"
-                                                >
+                                                <tr key={getBookingId(booking)} className="border-t border-slate-100">
                                                     <td className="px-6 py-5">
                                                         <p className="text-sm font-semibold text-[#0b1b30]">
                                                             #{getBookingId(booking)}
@@ -613,20 +524,10 @@ export default function UserBookings() {
                                                         <div className="flex items-center gap-3">
                                                             <div className="size-14 rounded-xl bg-slate-100 overflow-hidden shrink-0">
                                                                 {getCarImage(booking) ? (
-                                                                    <img
-                                                                        src={getCarImage(booking)}
-                                                                        alt={getCarName(booking)}
-                                                                        className="size-full object-cover"
-                                                                    />
+                                                                    <img src={getCarImage(booking)} alt={getCarName(booking)} className="size-full object-cover" />
                                                                 ) : (
                                                                     <div className="size-full flex items-center justify-center text-slate-300">
-                                                                        <svg
-                                                                            className="size-6"
-                                                                            fill="none"
-                                                                            stroke="currentColor"
-                                                                            strokeWidth={1.8}
-                                                                            viewBox="0 0 24 24"
-                                                                        >
+                                                                        <svg className="size-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                                                                             <path d="M5 17H3a2 2 0 01-2-2V9a2 2 0 012-2h1l2-3h10l2 3h1a2 2 0 012 2v6a2 2 0 01-2 2h-2" />
                                                                             <circle cx="7" cy="17" r="2" />
                                                                             <circle cx="17" cy="17" r="2" />
@@ -658,10 +559,7 @@ export default function UserBookings() {
                                                     </td>
 
                                                     <td className="px-6 py-5 text-sm text-slate-700">
-                                                        {getDays(
-                                                            booking.startDate,
-                                                            booking.endDate
-                                                        )} days
+                                                        {getDays(booking.startDate, booking.endDate)} days
                                                     </td>
 
                                                     <td className="px-6 py-5 text-sm font-bold text-blue-600">
@@ -669,27 +567,19 @@ export default function UserBookings() {
                                                     </td>
 
                                                     <td className="px-6 py-5">
-                                                        <span
-                                                            className={`inline-flex px-3 py-1.5 rounded-full text-xs font-semibold ${getStatusClass(booking.status)}`}
-                                                        >
+                                                        <span className={`inline-flex px-3 py-1.5 rounded-full text-xs font-semibold ${getStatusClass(booking.status)}`}>
                                                             {getStatusText(booking.status)}
                                                         </span>
                                                     </td>
 
                                                     <td className="px-6 py-5">
                                                         <div className="flex gap-2">
-                                                            <button
-                                                                onClick={() => setSelectedBooking(booking)}
-                                                                className="h-10 px-4 rounded-xl bg-linear-to-r from-[#2563eb] to-[#0ea5e9] text-white text-sm font-semibold"
-                                                            >
+                                                            <button onClick={() => setSelectedBooking(booking)} className="h-10 px-4 rounded-xl bg-linear-to-r from-[#2563eb] to-[#0ea5e9] text-white text-sm font-semibold">
                                                                 View
                                                             </button>
 
                                                             {booking.status === 'pending' && (
-                                                                <button
-                                                                    onClick={() => setCancelTarget(booking)}
-                                                                    className="h-10 px-4 rounded-xl border border-red-200 text-red-500 text-sm font-semibold hover:bg-red-50 transition"
-                                                                >
+                                                                <button onClick={() => setCancelTarget(booking)} className="h-10 px-4 rounded-xl border border-red-200 text-red-500 text-sm font-semibold hover:bg-red-50 transition">
                                                                     Cancel
                                                                 </button>
                                                             )}
@@ -704,27 +594,14 @@ export default function UserBookings() {
 
                             <div className="xl:hidden grid grid-cols-1 md:grid-cols-2 gap-5">
                                 {paginatedBookings.map(booking => (
-                                    <div
-                                        key={getBookingId(booking)}
-                                        className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5"
-                                    >
+                                    <div key={getBookingId(booking)} className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5">
                                         <div className="flex items-start gap-4">
                                             <div className="size-20 rounded-2xl bg-slate-100 overflow-hidden shrink-0">
                                                 {getCarImage(booking) ? (
-                                                    <img
-                                                        src={getCarImage(booking)}
-                                                        alt={getCarName(booking)}
-                                                        className="size-full object-cover"
-                                                    />
+                                                    <img src={getCarImage(booking)} alt={getCarName(booking)} className="size-full object-cover" />
                                                 ) : (
                                                     <div className="size-full flex items-center justify-center text-slate-300">
-                                                        <svg
-                                                            className="size-7"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            strokeWidth={1.8}
-                                                            viewBox="0 0 24 24"
-                                                        >
+                                                        <svg className="size-7" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                                                             <path d="M5 17H3a2 2 0 01-2-2V9a2 2 0 012-2h1l2-3h10l2 3h1a2 2 0 012 2v6a2 2 0 01-2 2h-2" />
                                                             <circle cx="7" cy="17" r="2" />
                                                             <circle cx="17" cy="17" r="2" />
@@ -742,9 +619,7 @@ export default function UserBookings() {
                                                     #{getBookingId(booking)}
                                                 </p>
 
-                                                <span
-                                                    className={`inline-flex mt-2 px-3 py-1.5 rounded-full text-xs font-semibold ${getStatusClass(booking.status)}`}
-                                                >
+                                                <span className={`inline-flex mt-2 px-3 py-1.5 rounded-full text-xs font-semibold ${getStatusClass(booking.status)}`}>
                                                     {getStatusText(booking.status)}
                                                 </span>
                                             </div>
@@ -755,6 +630,7 @@ export default function UserBookings() {
                                                 <p className="text-xs text-slate-400">
                                                     Pickup
                                                 </p>
+
                                                 <p className="text-sm font-medium text-slate-700 mt-1">
                                                     {formatDate(booking.startDate)}
                                                 </p>
@@ -764,6 +640,7 @@ export default function UserBookings() {
                                                 <p className="text-xs text-slate-400">
                                                     Return
                                                 </p>
+
                                                 <p className="text-sm font-medium text-slate-700 mt-1">
                                                     {formatDate(booking.endDate)}
                                                 </p>
@@ -773,11 +650,9 @@ export default function UserBookings() {
                                                 <p className="text-xs text-slate-400">
                                                     Duration
                                                 </p>
+
                                                 <p className="text-sm font-medium text-slate-700 mt-1">
-                                                    {getDays(
-                                                        booking.startDate,
-                                                        booking.endDate
-                                                    )} days
+                                                    {getDays(booking.startDate, booking.endDate)} days
                                                 </p>
                                             </div>
 
@@ -785,6 +660,7 @@ export default function UserBookings() {
                                                 <p className="text-xs text-slate-400">
                                                     Total
                                                 </p>
+
                                                 <p className="text-sm font-bold text-blue-600 mt-1">
                                                     ${getTotal(booking).toLocaleString()}
                                                 </p>
@@ -792,18 +668,12 @@ export default function UserBookings() {
                                         </div>
 
                                         <div className="flex gap-2 mt-5">
-                                            <button
-                                                onClick={() => setSelectedBooking(booking)}
-                                                className="flex-1 h-11 rounded-xl bg-linear-to-r from-[#2563eb] to-[#0ea5e9] text-white text-sm font-semibold"
-                                            >
+                                            <button onClick={() => setSelectedBooking(booking)} className="flex-1 h-11 rounded-xl bg-linear-to-r from-[#2563eb] to-[#0ea5e9] text-white text-sm font-semibold">
                                                 View Details
                                             </button>
 
                                             {booking.status === 'pending' && (
-                                                <button
-                                                    onClick={() => setCancelTarget(booking)}
-                                                    className="h-11 px-4 rounded-xl border border-red-200 text-red-500 text-sm font-semibold hover:bg-red-50"
-                                                >
+                                                <button onClick={() => setCancelTarget(booking)} className="h-11 px-4 rounded-xl border border-red-200 text-red-500 text-sm font-semibold hover:bg-red-50">
                                                     Cancel
                                                 </button>
                                             )}
@@ -825,30 +695,11 @@ export default function UserBookings() {
                                 </p>
 
                                 <div className="flex items-center gap-2">
-                                    <button
-                                        onClick={() =>
-                                            setCurrentPage(
-                                                Math.max(safePage - 1, 1)
-                                            )
-                                        }
-                                        disabled={safePage === 1}
-                                        className="h-11 px-4 rounded-xl border border-slate-200 bg-white text-slate-600 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
+                                    <button onClick={() => setCurrentPage(Math.max(safePage - 1, 1))} disabled={safePage === 1} className="h-11 px-4 rounded-xl border border-slate-200 bg-white text-slate-600 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed">
                                         Previous
                                     </button>
 
-                                    <button
-                                        onClick={() =>
-                                            setCurrentPage(
-                                                Math.min(
-                                                    safePage + 1,
-                                                    totalPages
-                                                )
-                                            )
-                                        }
-                                        disabled={safePage === totalPages}
-                                        className="h-11 px-4 rounded-xl border border-slate-200 bg-white text-slate-600 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
+                                    <button onClick={() => setCurrentPage(Math.min(safePage + 1, totalPages))} disabled={safePage === totalPages} className="h-11 px-4 rounded-xl border border-slate-200 bg-white text-slate-600 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed">
                                         Next
                                     </button>
                                 </div>
@@ -871,17 +722,8 @@ export default function UserBookings() {
                                     </h3>
                                 </div>
 
-                                <button
-                                    onClick={() => setSelectedBooking(null)}
-                                    className="size-10 rounded-xl border border-slate-200 text-slate-500 flex items-center justify-center hover:bg-slate-50"
-                                >
-                                    <svg
-                                        className="size-5"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth={2}
-                                        viewBox="0 0 24 24"
-                                    >
+                                <button onClick={() => setSelectedBooking(null)} className="size-10 rounded-xl border border-slate-200 text-slate-500 flex items-center justify-center hover:bg-slate-50">
+                                    <svg className="size-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                                         <path d="M18 6L6 18M6 6l12 12" />
                                     </svg>
                                 </button>
@@ -889,13 +731,19 @@ export default function UserBookings() {
 
                             <div className="p-6">
                                 <div className="flex items-start gap-4">
-                                    {getCarImage(selectedBooking) && (
-                                        <img
-                                            src={getCarImage(selectedBooking)}
-                                            alt={getCarName(selectedBooking)}
-                                            className="size-20 rounded-2xl object-cover"
-                                        />
-                                    )}
+                                    <div className="size-20 rounded-2xl bg-slate-100 overflow-hidden shrink-0">
+                                        {getCarImage(selectedBooking) ? (
+                                            <img src={getCarImage(selectedBooking)} alt={getCarName(selectedBooking)} className="size-full object-cover" />
+                                        ) : (
+                                            <div className="size-full flex items-center justify-center text-slate-300">
+                                                <svg className="size-8" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                                                    <path d="M5 17H3a2 2 0 01-2-2V9a2 2 0 012-2h1l2-3h10l2 3h1a2 2 0 012 2v6a2 2 0 01-2 2h-2" />
+                                                    <circle cx="7" cy="17" r="2" />
+                                                    <circle cx="17" cy="17" r="2" />
+                                                </svg>
+                                            </div>
+                                        )}
+                                    </div>
 
                                     <div>
                                         <h4 className="text-xl font-bold text-[#0b1b30]">
@@ -906,9 +754,7 @@ export default function UserBookings() {
                                             {getLocation(selectedBooking)}
                                         </p>
 
-                                        <span
-                                            className={`inline-flex mt-3 px-3 py-1.5 rounded-full text-xs font-semibold ${getStatusClass(selectedBooking.status)}`}
-                                        >
+                                        <span className={`inline-flex mt-3 px-3 py-1.5 rounded-full text-xs font-semibold ${getStatusClass(selectedBooking.status)}`}>
                                             {getStatusText(selectedBooking.status)}
                                         </span>
                                     </div>
@@ -919,6 +765,7 @@ export default function UserBookings() {
                                         <p className="text-xs text-slate-400">
                                             Pickup
                                         </p>
+
                                         <p className="text-sm font-semibold text-slate-700 mt-1">
                                             {formatDate(selectedBooking.startDate)}
                                         </p>
@@ -928,6 +775,7 @@ export default function UserBookings() {
                                         <p className="text-xs text-slate-400">
                                             Return
                                         </p>
+
                                         <p className="text-sm font-semibold text-slate-700 mt-1">
                                             {formatDate(selectedBooking.endDate)}
                                         </p>
@@ -937,11 +785,9 @@ export default function UserBookings() {
                                         <p className="text-xs text-slate-400">
                                             Duration
                                         </p>
+
                                         <p className="text-sm font-semibold text-slate-700 mt-1">
-                                            {getDays(
-                                                selectedBooking.startDate,
-                                                selectedBooking.endDate
-                                            )} days
+                                            {getDays(selectedBooking.startDate, selectedBooking.endDate)} days
                                         </p>
                                     </div>
 
@@ -949,29 +795,22 @@ export default function UserBookings() {
                                         <p className="text-xs text-slate-400">
                                             Total
                                         </p>
+
                                         <p className="text-sm font-bold text-blue-600 mt-1">
                                             ${getTotal(selectedBooking).toLocaleString()}
                                         </p>
                                     </div>
                                 </div>
 
-                                <StatusTimeline
-                                    status={selectedBooking.status}
-                                />
+                                <StatusTimeline status={selectedBooking.status} />
 
                                 <div className="flex justify-end gap-3 mt-8">
-                                    <button
-                                        onClick={() => setSelectedBooking(null)}
-                                        className="h-11 px-5 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium"
-                                    >
+                                    <button onClick={() => setSelectedBooking(null)} className="h-11 px-5 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium">
                                         Close
                                     </button>
 
                                     {selectedBooking.status === 'pending' && (
-                                        <button
-                                            onClick={() => setCancelTarget(selectedBooking)}
-                                            className="h-11 px-5 rounded-xl border border-red-200 bg-red-50 text-red-600 text-sm font-semibold hover:bg-red-100 transition"
-                                        >
+                                        <button onClick={() => setCancelTarget(selectedBooking)} className="h-11 px-5 rounded-xl border border-red-200 bg-red-50 text-red-600 text-sm font-semibold hover:bg-red-100 transition">
                                             Cancel Booking
                                         </button>
                                     )}
@@ -985,13 +824,7 @@ export default function UserBookings() {
                     <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-60 flex items-center justify-center p-4">
                         <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-6">
                             <div className="size-12 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center">
-                                <svg
-                                    className="size-6"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth={2}
-                                    viewBox="0 0 24 24"
-                                >
+                                <svg className="size-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                                     <path d="M12 9v4M12 17h.01" />
                                     <path d="M10.3 3.8L2.7 17a2 2 0 001.7 3h15.2a2 2 0 001.7-3L13.7 3.8a2 2 0 00-3.4 0z" />
                                 </svg>
@@ -1006,23 +839,12 @@ export default function UserBookings() {
                             </p>
 
                             <div className="grid grid-cols-2 gap-3 mt-6">
-                                <button
-                                    onClick={() => setCancelTarget(null)}
-                                    disabled={cancelling}
-                                    className="h-11 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold disabled:opacity-50"
-                                >
+                                <button onClick={() => setCancelTarget(null)} disabled={cancelling} className="h-11 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold disabled:opacity-50">
                                     Keep Booking
                                 </button>
 
-                                <button
-                                    onClick={handleCancelBooking}
-                                    disabled={cancelling}
-                                    className="h-11 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold disabled:opacity-60"
-                                >
-                                    {cancelling
-                                        ? 'Cancelling...'
-                                        : 'Yes, Cancel'
-                                    }
+                                <button onClick={handleCancelBooking} disabled={cancelling} className="h-11 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold disabled:opacity-60">
+                                    {cancelling ? 'Cancelling...' : 'Yes, Cancel'}
                                 </button>
                             </div>
                         </div>

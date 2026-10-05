@@ -1,10 +1,19 @@
 import { useEffect, useMemo, useState } from 'react'
 import API from '../../api/axios'
 
+const backendUrl = (API.defaults.baseURL || '').replace(/\/api\/?$/, '')
+
+function getImageUrl(value) {
+    if (!value) return ''
+    if (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('data:')) return value
+    return `${backendUrl}${value}`
+}
+
 function formatDate(value) {
     if (!value) return '-'
 
     const date = new Date(`${value}T00:00:00`)
+
     if (Number.isNaN(date.getTime())) return '-'
 
     return date.toLocaleDateString('en-US', {
@@ -27,7 +36,7 @@ function getCarName(booking) {
 }
 
 function getCarImage(booking) {
-    return booking?.car?.imageUrl || ''
+    return getImageUrl(booking?.car?.imageUrl || '')
 }
 
 function getLocation(booking) {
@@ -89,6 +98,7 @@ function Pagination({ page, totalPages, setPage }) {
         .filter(number => number === 1 || number === totalPages || Math.abs(number - page) <= 1)
         .reduce((result, number, index, array) => {
             if (index > 0 && number - array[index - 1] > 1) result.push('...')
+
             result.push(number)
             return result
         }, [])
@@ -101,11 +111,7 @@ function Pagination({ page, totalPages, setPage }) {
             </p>
 
             <div className="flex items-center gap-1.5">
-                <button
-                    onClick={() => setPage(current => Math.max(1, current - 1))}
-                    disabled={page === 1}
-                    className="size-9 rounded-xl border border-slate-200 bg-white text-slate-500 flex items-center justify-center hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
-                >
+                <button onClick={() => setPage(current => Math.max(1, current - 1))} disabled={page === 1} className="size-9 rounded-xl border border-slate-200 bg-white text-slate-500 flex items-center justify-center hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition">
                     <svg className="size-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /></svg>
                 </button>
 
@@ -113,24 +119,13 @@ function Pagination({ page, totalPages, setPage }) {
                     number === '...' ? (
                         <span key={`dots-${index}`} className="size-9 flex items-center justify-center text-xs text-slate-400">...</span>
                     ) : (
-                        <button
-                            key={number}
-                            onClick={() => setPage(number)}
-                            className={`size-9 rounded-xl text-xs font-semibold transition ${page === number
-                                    ? 'bg-linear-to-r from-sky-600 to-blue-600 text-white shadow-md shadow-sky-500/20'
-                                    : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
-                                }`}
-                        >
+                        <button key={number} onClick={() => setPage(number)} className={`size-9 rounded-xl text-xs font-semibold transition ${page === number ? 'bg-linear-to-r from-sky-600 to-blue-600 text-white shadow-md shadow-sky-500/20' : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'}`}>
                             {number}
                         </button>
                     )
                 )}
 
-                <button
-                    onClick={() => setPage(current => Math.min(totalPages, current + 1))}
-                    disabled={page === totalPages}
-                    className="size-9 rounded-xl border border-slate-200 bg-white text-slate-500 flex items-center justify-center hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
-                >
+                <button onClick={() => setPage(current => Math.min(totalPages, current + 1))} disabled={page === totalPages} className="size-9 rounded-xl border border-slate-200 bg-white text-slate-500 flex items-center justify-center hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition">
                     <svg className="size-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" /></svg>
                 </button>
             </div>
@@ -162,7 +157,12 @@ export default function AdminBookings() {
         const fetchBookings = async () => {
             try {
                 const response = await API.get('/getAllBooking')
-                setBookings(Array.isArray(response.data) ? response.data : [])
+
+                setBookings(
+                    Array.isArray(response.data)
+                        ? response.data
+                        : []
+                )
             } catch (error) {
                 setMessage({
                     text: error.response?.data?.message || 'Failed to load bookings.',
@@ -178,7 +178,12 @@ export default function AdminBookings() {
 
     const refreshBookings = async () => {
         const response = await API.get('/getAllBooking')
-        setBookings(Array.isArray(response.data) ? response.data : [])
+
+        setBookings(
+            Array.isArray(response.data)
+                ? response.data
+                : []
+        )
     }
 
     const showMessage = (text, type = 'success') => {
@@ -203,7 +208,9 @@ export default function AdminBookings() {
         let list = [...bookings]
 
         if (statusFilter !== 'all') {
-            list = list.filter(booking => booking.status === statusFilter)
+            list = list.filter(booking =>
+                booking.status === statusFilter
+            )
         }
 
         if (searchTerm.trim()) {
@@ -226,12 +233,23 @@ export default function AdminBookings() {
         return list
     }, [bookings, searchTerm, statusFilter])
 
-    const totalPages = Math.max(1, Math.ceil(filteredBookings.length / rowLimit))
-    const safePage = Math.min(page, totalPages)
+    const totalPages = Math.max(
+        1,
+        Math.ceil(filteredBookings.length / rowLimit)
+    )
+
+    const safePage = Math.min(
+        page,
+        totalPages
+    )
 
     const paginatedBookings = useMemo(() => {
         const start = (safePage - 1) * rowLimit
-        return filteredBookings.slice(start, start + rowLimit)
+
+        return filteredBookings.slice(
+            start,
+            start + rowLimit
+        )
     }, [filteredBookings, rowLimit, safePage])
 
     const handleConfirm = async () => {
@@ -240,16 +258,22 @@ export default function AdminBookings() {
         setActionLoading(true)
 
         try {
-            await API.put(`/bookings/${getBookingId(confirmTarget)}/confirm`)
+            await API.put(
+                `/bookings/${getBookingId(confirmTarget)}/confirm`
+            )
+
             await refreshBookings()
 
             setConfirmTarget(null)
             setSelectedBooking(null)
 
-            showMessage('Booking confirmed successfully.')
+            showMessage(
+                'Booking confirmed successfully.'
+            )
         } catch (error) {
             showMessage(
-                error.response?.data?.message || 'Failed to confirm booking.',
+                error.response?.data?.message ||
+                'Failed to confirm booking.',
                 'error'
             )
         } finally {
@@ -263,19 +287,25 @@ export default function AdminBookings() {
         setActionLoading(true)
 
         try {
-            await API.put(`/updateBooking/${getBookingId(declineTarget)}`, {
-                status: 'cancelled'
-            })
+            await API.put(
+                `/updateBooking/${getBookingId(declineTarget)}`,
+                {
+                    status: 'cancelled'
+                }
+            )
 
             await refreshBookings()
 
             setDeclineTarget(null)
             setSelectedBooking(null)
 
-            showMessage('Booking request declined.')
+            showMessage(
+                'Booking request declined.'
+            )
         } catch (error) {
             showMessage(
-                error.response?.data?.message || 'Failed to decline booking.',
+                error.response?.data?.message ||
+                'Failed to decline booking.',
                 'error'
             )
         } finally {
@@ -299,8 +329,13 @@ export default function AdminBookings() {
 
                     <div className="relative flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6">
                         <div className="max-w-2xl">
-                            <p className="text-[12px] font-semibold tracking-[0.28em] uppercase text-sky-300">Booking Management</p>
-                            <h1 className="text-3xl md:text-[40px] leading-tight font-bold text-white mt-3">Manage Bookings</h1>
+                            <p className="text-[12px] font-semibold tracking-[0.28em] uppercase text-sky-300">
+                                Booking Management
+                            </p>
+
+                            <h1 className="text-3xl md:text-[40px] leading-tight font-bold text-white mt-3">
+                                Manage Bookings
+                            </h1>
 
                             <p className="text-[15px] leading-7 text-slate-300 mt-3 max-w-xl">
                                 Review customer requests, confirm rentals and keep track of booking activity.
@@ -309,13 +344,23 @@ export default function AdminBookings() {
 
                         <div className="grid grid-cols-2 gap-3">
                             <div className="min-w-28 rounded-[22px] border border-white/10 bg-white/8 backdrop-blur-md px-4 py-4">
-                                <p className="text-2xl font-bold text-white">{stats.pending}</p>
-                                <p className="text-sm text-slate-300 mt-1">Pending Requests</p>
+                                <p className="text-2xl font-bold text-white">
+                                    {stats.pending}
+                                </p>
+
+                                <p className="text-sm text-slate-300 mt-1">
+                                    Pending Requests
+                                </p>
                             </div>
 
                             <div className="min-w-28 rounded-[22px] border border-white/10 bg-white/8 backdrop-blur-md px-4 py-4">
-                                <p className="text-2xl font-bold text-white">{stats.confirmed}</p>
-                                <p className="text-sm text-slate-300 mt-1">Confirmed</p>
+                                <p className="text-2xl font-bold text-white">
+                                    {stats.confirmed}
+                                </p>
+
+                                <p className="text-sm text-slate-300 mt-1">
+                                    Confirmed
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -323,8 +368,8 @@ export default function AdminBookings() {
 
                 {message.text && (
                     <div className={`mt-5 rounded-2xl border px-4 py-3.5 text-sm ${message.type === 'error'
-                            ? 'bg-red-50 border-red-200 text-red-600'
-                            : 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                        ? 'bg-red-50 border-red-200 text-red-600'
+                        : 'bg-emerald-50 border-emerald-200 text-emerald-700'
                         }`}>
                         {message.text}
                     </div>
@@ -384,17 +429,7 @@ export default function AdminBookings() {
 
                             <div className="flex gap-2 overflow-x-auto">
                                 {statusTabs.map(tab => (
-                                    <button
-                                        key={tab.key}
-                                        onClick={() => {
-                                            setStatusFilter(tab.key)
-                                            setPage(1)
-                                        }}
-                                        className={`h-12 px-5 rounded-2xl border text-sm font-semibold whitespace-nowrap transition ${statusFilter === tab.key
-                                                ? 'bg-slate-900 border-slate-900 text-white shadow-md shadow-slate-900/10'
-                                                : 'bg-white border-slate-200 text-slate-600 hover:border-sky-200 hover:text-sky-600'
-                                            }`}
-                                    >
+                                    <button key={tab.key} onClick={() => { setStatusFilter(tab.key); setPage(1) }} className={`h-12 px-5 rounded-2xl border text-sm font-semibold whitespace-nowrap transition ${statusFilter === tab.key ? 'bg-slate-900 border-slate-900 text-white shadow-md shadow-slate-900/10' : 'bg-white border-slate-200 text-slate-600 hover:border-sky-200 hover:text-sky-600'}`}>
                                         {tab.label}
                                     </button>
                                 ))}
@@ -404,25 +439,34 @@ export default function AdminBookings() {
 
                     <div className="px-5 md:px-6 py-4 border-t border-slate-100 flex items-center justify-between gap-4">
                         <div>
-                            <h2 className="text-lg font-bold text-slate-900">Booking Requests</h2>
+                            <h2 className="text-lg font-bold text-slate-900">
+                                Booking Requests
+                            </h2>
+
                             <p className="text-xs text-slate-400 mt-1">
                                 Showing {paginatedBookings.length} of {filteredBookings.length} bookings
                             </p>
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <span className="text-xs text-slate-400">Rows</span>
+                            <span className="text-xs text-slate-400">
+                                Rows
+                            </span>
 
                             <select
                                 value={rowLimit}
                                 onChange={e => {
-                                    setRowLimit(Number(e.target.value))
+                                    setRowLimit(
+                                        Number(e.target.value)
+                                    )
                                     setPage(1)
                                 }}
                                 className="h-10 px-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-600 outline-none focus:border-sky-400"
                             >
                                 {[5, 10, 20, 25, 50].map(value => (
-                                    <option key={value} value={value}>{value}</option>
+                                    <option key={value} value={value}>
+                                        {value}
+                                    </option>
                                 ))}
                             </select>
                         </div>
@@ -432,7 +476,16 @@ export default function AdminBookings() {
                         <table className="w-full min-w-240">
                             <thead className="bg-slate-50/80">
                                 <tr>
-                                    {['Booking', 'Vehicle', 'Customer', 'Rental Period', 'Duration', 'Total', 'Status', 'Actions'].map(title => (
+                                    {[
+                                        'Booking',
+                                        'Vehicle',
+                                        'Customer',
+                                        'Rental Period',
+                                        'Duration',
+                                        'Total',
+                                        'Status',
+                                        'Actions'
+                                    ].map(title => (
                                         <th key={title} className="px-5 py-4 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
                                             {title}
                                         </th>
@@ -446,7 +499,10 @@ export default function AdminBookings() {
                                         <td colSpan={8} className="py-20">
                                             <div className="flex items-center justify-center gap-3">
                                                 <div className="size-6 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
-                                                <span className="text-sm text-slate-400">Loading bookings...</span>
+
+                                                <span className="text-sm text-slate-400">
+                                                    Loading bookings...
+                                                </span>
                                             </div>
                                         </td>
                                     </tr>
@@ -457,16 +513,26 @@ export default function AdminBookings() {
                                                 <svg className="size-7" fill="none" stroke="currentColor" strokeWidth={1.6} viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>
                                             </div>
 
-                                            <p className="text-sm font-semibold text-slate-600 mt-4">No bookings found</p>
-                                            <p className="text-xs text-slate-400 mt-1">Try changing your search or status filter.</p>
+                                            <p className="text-sm font-semibold text-slate-600 mt-4">
+                                                No bookings found
+                                            </p>
+
+                                            <p className="text-xs text-slate-400 mt-1">
+                                                Try changing your search or status filter.
+                                            </p>
                                         </td>
                                     </tr>
                                 ) : (
                                     paginatedBookings.map(booking => (
                                         <tr key={getBookingId(booking)} className="border-t border-slate-100 hover:bg-slate-50/70 transition">
                                             <td className="px-5 py-4">
-                                                <p className="text-sm font-bold text-slate-900">#{getBookingId(booking)}</p>
-                                                <p className="text-[11px] text-slate-400 mt-1">Car #{booking.carId}</p>
+                                                <p className="text-sm font-bold text-slate-900">
+                                                    #{getBookingId(booking)}
+                                                </p>
+
+                                                <p className="text-[11px] text-slate-400 mt-1">
+                                                    Car #{booking.carId}
+                                                </p>
                                             </td>
 
                                             <td className="px-5 py-4">
@@ -482,61 +548,71 @@ export default function AdminBookings() {
                                                     </div>
 
                                                     <div>
-                                                        <p className="text-sm font-semibold text-slate-700">{getCarName(booking)}</p>
-                                                        <p className="text-xs text-slate-400 mt-1">{getLocation(booking)}</p>
+                                                        <p className="text-sm font-semibold text-slate-700">
+                                                            {getCarName(booking)}
+                                                        </p>
+
+                                                        <p className="text-xs text-slate-400 mt-1">
+                                                            {getLocation(booking)}
+                                                        </p>
                                                     </div>
                                                 </div>
                                             </td>
 
                                             <td className="px-5 py-4">
-                                                <p className="text-sm font-medium text-slate-700">User #{booking.userId}</p>
-                                            </td>
-
-                                            <td className="px-5 py-4">
-                                                <p className="text-sm text-slate-600">{formatDate(booking.startDate)}</p>
-                                                <p className="text-xs text-slate-400 mt-1">to {formatDate(booking.endDate)}</p>
+                                                <p className="text-sm font-medium text-slate-700">
+                                                    User #{booking.userId}
+                                                </p>
                                             </td>
 
                                             <td className="px-5 py-4">
                                                 <p className="text-sm text-slate-600">
-                                                    {getDays(booking.startDate, booking.endDate)} days
+                                                    {formatDate(booking.startDate)}
+                                                </p>
+
+                                                <p className="text-xs text-slate-400 mt-1">
+                                                    to {formatDate(booking.endDate)}
+                                                </p>
+                                            </td>
+
+                                            <td className="px-5 py-4">
+                                                <p className="text-sm text-slate-600">
+                                                    {getDays(
+                                                        booking.startDate,
+                                                        booking.endDate
+                                                    )} days
                                                 </p>
                                             </td>
 
                                             <td className="px-5 py-4">
                                                 <p className="text-sm font-bold text-slate-900">
-                                                    ${Number(booking.totalAmount || 0).toLocaleString()}
+                                                    ${Number(
+                                                        booking.totalAmount || 0
+                                                    ).toLocaleString()}
                                                 </p>
                                             </td>
 
                                             <td className="px-5 py-4">
                                                 <span className={`inline-flex px-3 py-1.5 rounded-full border text-xs font-semibold ${getStatusClass(booking.status)}`}>
-                                                    {getStatusLabel(booking.status)}
+                                                    {getStatusLabel(
+                                                        booking.status
+                                                    )}
                                                 </span>
                                             </td>
 
                                             <td className="px-5 py-4">
                                                 <div className="flex items-center gap-2">
-                                                    <button
-                                                        onClick={() => setSelectedBooking(booking)}
-                                                        className="h-9 px-3 rounded-xl border border-slate-200 text-slate-600 text-xs font-semibold hover:bg-slate-50"
-                                                    >
+                                                    <button onClick={() => setSelectedBooking(booking)} className="h-9 px-3 rounded-xl border border-slate-200 text-slate-600 text-xs font-semibold hover:bg-slate-50">
                                                         View
                                                     </button>
 
                                                     {booking.status === 'pending' && (
                                                         <>
-                                                            <button
-                                                                onClick={() => setConfirmTarget(booking)}
-                                                                className="h-9 px-3 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-semibold hover:bg-emerald-100 transition"
-                                                            >
+                                                            <button onClick={() => setConfirmTarget(booking)} className="h-9 px-3 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-semibold hover:bg-emerald-100 transition">
                                                                 Confirm
                                                             </button>
 
-                                                            <button
-                                                                onClick={() => setDeclineTarget(booking)}
-                                                                className="h-9 px-3 rounded-xl bg-red-50 border border-red-100 text-red-600 text-xs font-semibold hover:bg-red-100 transition"
-                                                            >
+                                                            <button onClick={() => setDeclineTarget(booking)} className="h-9 px-3 rounded-xl bg-red-50 border border-red-100 text-red-600 text-xs font-semibold hover:bg-red-100 transition">
                                                                 Decline
                                                             </button>
                                                         </>
@@ -558,14 +634,16 @@ export default function AdminBookings() {
                         <div className="w-full max-w-2xl bg-white rounded-[28px] shadow-2xl overflow-hidden">
                             <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
                                 <div>
-                                    <p className="text-xs font-semibold text-sky-600 tracking-[0.18em] uppercase">Booking Details</p>
-                                    <h3 className="text-2xl font-bold text-slate-900 mt-1">Booking #{getBookingId(selectedBooking)}</h3>
+                                    <p className="text-xs font-semibold text-sky-600 tracking-[0.18em] uppercase">
+                                        Booking Details
+                                    </p>
+
+                                    <h3 className="text-2xl font-bold text-slate-900 mt-1">
+                                        Booking #{getBookingId(selectedBooking)}
+                                    </h3>
                                 </div>
 
-                                <button
-                                    onClick={() => setSelectedBooking(null)}
-                                    className="size-10 rounded-xl border border-slate-200 text-slate-500 flex items-center justify-center hover:bg-slate-50"
-                                >
+                                <button onClick={() => setSelectedBooking(null)} className="size-10 rounded-xl border border-slate-200 text-slate-500 flex items-center justify-center hover:bg-slate-50">
                                     <svg className="size-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" /></svg>
                                 </button>
                             </div>
@@ -583,63 +661,89 @@ export default function AdminBookings() {
                                     </div>
 
                                     <div className="min-w-0">
-                                        <h4 className="text-xl font-bold text-slate-900">{getCarName(selectedBooking)}</h4>
-                                        <p className="text-sm text-slate-500 mt-1">{getLocation(selectedBooking)}</p>
-                                        <p className="text-sm text-slate-500 mt-1">Customer: User #{selectedBooking.userId}</p>
+                                        <h4 className="text-xl font-bold text-slate-900">
+                                            {getCarName(selectedBooking)}
+                                        </h4>
+
+                                        <p className="text-sm text-slate-500 mt-1">
+                                            {getLocation(selectedBooking)}
+                                        </p>
+
+                                        <p className="text-sm text-slate-500 mt-1">
+                                            Customer: User #{selectedBooking.userId}
+                                        </p>
 
                                         <span className={`inline-flex mt-3 px-3 py-1.5 rounded-full border text-xs font-semibold ${getStatusClass(selectedBooking.status)}`}>
-                                            {getStatusLabel(selectedBooking.status)}
+                                            {getStatusLabel(
+                                                selectedBooking.status
+                                            )}
                                         </span>
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
                                     <div className="rounded-2xl bg-slate-50 border border-slate-100 p-4">
-                                        <p className="text-xs text-slate-400">Pickup</p>
-                                        <p className="text-sm font-semibold text-slate-700 mt-1">{formatDate(selectedBooking.startDate)}</p>
-                                    </div>
+                                        <p className="text-xs text-slate-400">
+                                            Pickup
+                                        </p>
 
-                                    <div className="rounded-2xl bg-slate-50 border border-slate-100 p-4">
-                                        <p className="text-xs text-slate-400">Return</p>
-                                        <p className="text-sm font-semibold text-slate-700 mt-1">{formatDate(selectedBooking.endDate)}</p>
-                                    </div>
-
-                                    <div className="rounded-2xl bg-slate-50 border border-slate-100 p-4">
-                                        <p className="text-xs text-slate-400">Duration</p>
                                         <p className="text-sm font-semibold text-slate-700 mt-1">
-                                            {getDays(selectedBooking.startDate, selectedBooking.endDate)} days
+                                            {formatDate(
+                                                selectedBooking.startDate
+                                            )}
                                         </p>
                                     </div>
 
                                     <div className="rounded-2xl bg-slate-50 border border-slate-100 p-4">
-                                        <p className="text-xs text-slate-400">Total</p>
+                                        <p className="text-xs text-slate-400">
+                                            Return
+                                        </p>
+
+                                        <p className="text-sm font-semibold text-slate-700 mt-1">
+                                            {formatDate(
+                                                selectedBooking.endDate
+                                            )}
+                                        </p>
+                                    </div>
+
+                                    <div className="rounded-2xl bg-slate-50 border border-slate-100 p-4">
+                                        <p className="text-xs text-slate-400">
+                                            Duration
+                                        </p>
+
+                                        <p className="text-sm font-semibold text-slate-700 mt-1">
+                                            {getDays(
+                                                selectedBooking.startDate,
+                                                selectedBooking.endDate
+                                            )} days
+                                        </p>
+                                    </div>
+
+                                    <div className="rounded-2xl bg-slate-50 border border-slate-100 p-4">
+                                        <p className="text-xs text-slate-400">
+                                            Total
+                                        </p>
+
                                         <p className="text-sm font-bold text-slate-900 mt-1">
-                                            ${Number(selectedBooking.totalAmount || 0).toLocaleString()}
+                                            ${Number(
+                                                selectedBooking.totalAmount || 0
+                                            ).toLocaleString()}
                                         </p>
                                     </div>
                                 </div>
 
                                 <div className="flex justify-end gap-3 mt-7">
-                                    <button
-                                        onClick={() => setSelectedBooking(null)}
-                                        className="h-11 px-5 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-slate-50"
-                                    >
+                                    <button onClick={() => setSelectedBooking(null)} className="h-11 px-5 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-slate-50">
                                         Close
                                     </button>
 
                                     {selectedBooking.status === 'pending' && (
                                         <>
-                                            <button
-                                                onClick={() => setDeclineTarget(selectedBooking)}
-                                                className="h-11 px-5 rounded-xl border border-red-100 bg-red-50 text-red-600 text-sm font-semibold hover:bg-red-100"
-                                            >
+                                            <button onClick={() => setDeclineTarget(selectedBooking)} className="h-11 px-5 rounded-xl border border-red-100 bg-red-50 text-red-600 text-sm font-semibold hover:bg-red-100">
                                                 Decline
                                             </button>
 
-                                            <button
-                                                onClick={() => setConfirmTarget(selectedBooking)}
-                                                className="h-11 px-5 rounded-xl bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700"
-                                            >
+                                            <button onClick={() => setConfirmTarget(selectedBooking)} className="h-11 px-5 rounded-xl bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700">
                                                 Confirm Booking
                                             </button>
                                         </>
@@ -657,29 +761,27 @@ export default function AdminBookings() {
                                 <svg className="size-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M5 12l4 4L19 6" /></svg>
                             </div>
 
-                            <h3 className="text-xl font-bold text-slate-900 mt-5">Confirm Booking?</h3>
+                            <h3 className="text-xl font-bold text-slate-900 mt-5">
+                                Confirm Booking?
+                            </h3>
 
                             <p className="text-sm text-slate-500 mt-2 leading-6">
                                 Confirm booking #{getBookingId(confirmTarget)} for{' '}
-                                <span className="font-semibold text-slate-700">{getCarName(confirmTarget)}</span>?
-                                The vehicle will be marked as booked.
+                                <span className="font-semibold text-slate-700">
+                                    {getCarName(confirmTarget)}
+                                </span>?
+                                {' '}The vehicle will be marked as booked.
                             </p>
 
                             <div className="grid grid-cols-2 gap-3 mt-6">
-                                <button
-                                    onClick={() => setConfirmTarget(null)}
-                                    disabled={actionLoading}
-                                    className="h-11 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold disabled:opacity-50"
-                                >
+                                <button onClick={() => setConfirmTarget(null)} disabled={actionLoading} className="h-11 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold disabled:opacity-50">
                                     Not Now
                                 </button>
 
-                                <button
-                                    onClick={handleConfirm}
-                                    disabled={actionLoading}
-                                    className="h-11 rounded-xl bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 disabled:opacity-60"
-                                >
-                                    {actionLoading ? 'Confirming...' : 'Yes, Confirm'}
+                                <button onClick={handleConfirm} disabled={actionLoading} className="h-11 rounded-xl bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 disabled:opacity-60">
+                                    {actionLoading
+                                        ? 'Confirming...'
+                                        : 'Yes, Confirm'}
                                 </button>
                             </div>
                         </div>
@@ -693,27 +795,23 @@ export default function AdminBookings() {
                                 <svg className="size-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" /></svg>
                             </div>
 
-                            <h3 className="text-xl font-bold text-slate-900 mt-5">Decline Request?</h3>
+                            <h3 className="text-xl font-bold text-slate-900 mt-5">
+                                Decline Request?
+                            </h3>
 
                             <p className="text-sm text-slate-500 mt-2 leading-6">
                                 Booking #{getBookingId(declineTarget)} will be marked as cancelled and will no longer be available for confirmation.
                             </p>
 
                             <div className="grid grid-cols-2 gap-3 mt-6">
-                                <button
-                                    onClick={() => setDeclineTarget(null)}
-                                    disabled={actionLoading}
-                                    className="h-11 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold disabled:opacity-50"
-                                >
+                                <button onClick={() => setDeclineTarget(null)} disabled={actionLoading} className="h-11 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold disabled:opacity-50">
                                     Keep Request
                                 </button>
 
-                                <button
-                                    onClick={handleDecline}
-                                    disabled={actionLoading}
-                                    className="h-11 rounded-xl bg-red-500 text-white text-sm font-semibold hover:bg-red-600 disabled:opacity-60"
-                                >
-                                    {actionLoading ? 'Declining...' : 'Yes, Decline'}
+                                <button onClick={handleDecline} disabled={actionLoading} className="h-11 rounded-xl bg-red-500 text-white text-sm font-semibold hover:bg-red-600 disabled:opacity-60">
+                                    {actionLoading
+                                        ? 'Declining...'
+                                        : 'Yes, Decline'}
                                 </button>
                             </div>
                         </div>
